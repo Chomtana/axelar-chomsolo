@@ -22,7 +22,7 @@ interface IETHRegistrarController {
         uint64
     ) external returns (bytes32);
 
-    function commit(bytes32) external;
+    function commit(bytes32, bytes32) external;
 
     function register(
         string calldata,

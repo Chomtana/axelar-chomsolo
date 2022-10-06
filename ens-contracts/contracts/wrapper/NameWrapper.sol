@@ -24,6 +24,8 @@ error LabelTooLong(string label);
 error IncorrectTargetOwner(address owner);
 error CannotUpgrade();
 
+error UnwrapForbidden();
+
 contract NameWrapper is
     Ownable,
     ERC1155Fuse,
@@ -928,7 +930,7 @@ contract NameWrapper is
             node,
             label,
             wrappedOwner,
-            fuses | PARENT_CANNOT_CONTROL,
+            fuses | PARENT_CANNOT_CONTROL | CANNOT_UNWRAP | CANNOT_TRANSFER, // Unwrap and transfer is forbidden in cross-chain domains
             expiry
         );
         if (resolver != address(0)) {
@@ -939,19 +941,20 @@ contract NameWrapper is
     }
 
     function _unwrap(bytes32 node, address owner) private {
-        if (owner == address(0x0) || owner == address(this)) {
-            revert IncorrectTargetOwner(owner);
-        }
+        revert UnwrapForbidden();
+        // if (owner == address(0x0) || owner == address(this)) {
+        //     revert IncorrectTargetOwner(owner);
+        // }
 
-        if (allFusesBurned(node, CANNOT_UNWRAP)) {
-            revert OperationProhibited(node);
-        }
+        // if (allFusesBurned(node, CANNOT_UNWRAP)) {
+        //     revert OperationProhibited(node);
+        // }
 
-        // Burn token and fuse data
-        _burn(uint256(node));
-        ens.setOwner(node, owner);
+        // // Burn token and fuse data
+        // _burn(uint256(node));
+        // ens.setOwner(node, owner);
 
-        emit NameUnwrapped(node, owner);
+        // emit NameUnwrapped(node, owner);
     }
 
     function _setFuses(
@@ -1006,4 +1009,6 @@ contract NameWrapper is
     {
         return ERC1155Fuse.getData(tokenId);
     }
+
+    
 }

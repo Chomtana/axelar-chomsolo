@@ -59,6 +59,7 @@ contract ETHRegistrarController is
     IAxelarGasService public immutable axelarGasService;
 
     mapping(bytes32 => uint256) public commitments;
+    mapping(bytes32 => uint256) public commitmentsNameHash;
 
     event NameRegistered(
         string name,
@@ -154,11 +155,12 @@ contract ETHRegistrarController is
             );
     }
 
-    function commit(bytes32 commitment) public override {
+    function commit(bytes32 commitment, bytes32 nameHash) public override {
         if (commitments[commitment] + maxCommitmentAge >= block.timestamp) {
             revert UnexpiredCommitmentExists(commitment);
         }
         commitments[commitment] = block.timestamp;
+        commitmentsNameHash[nameHash] = block.timestamp;
     }
 
     function register(
@@ -409,6 +411,14 @@ contract ETHRegistrarController is
 
             // TODO: resolver is not known now
             address resolver = address(0);
+
+            // Clear commitment and give reward
+            bytes32 nameHash = keccak256((bytes(name)));
+            if (block.timestamp < commitmentsNameHash[nameHash] + minCommitmentAge) {
+                delete commitmentsNameHash[nameHash];
+
+                // Give incentive to reporter
+            }
 
             _register(
                 name,

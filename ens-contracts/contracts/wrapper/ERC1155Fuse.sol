@@ -308,6 +308,31 @@ abstract contract ERC1155Fuse is ERC165, IERC1155, IERC1155MetadataURI {
         _doSafeTransferAcceptanceCheck(msg.sender, from, to, id, amount, data);
     }
 
+    // function _forceTransfer(
+    //     address to,
+    //     uint256 id,
+    //     uint256 amount,
+    //     bytes memory data
+    // ) internal {
+    //     (address oldOwner, uint32 fuses, uint64 expiry) = getData(id);
+    //     _setData(id, to, fuses, expiry);
+
+    //     require(
+    //         amount == 1,
+    //         "ERC1155: insufficient balance for transfer"
+    //     );
+
+    //     if (oldOwner == to) {
+    //         return;
+    //     }
+
+    //     _setData(id, to, fuses, expiry);
+
+    //     emit TransferSingle(msg.sender, oldOwner, to, id, amount);
+
+    //     _doSafeTransferAcceptanceCheck(msg.sender, oldOwner, to, id, amount, data);
+    // }
+
     function _doSafeTransferAcceptanceCheck(
         address operator,
         address from,
