@@ -1,0 +1,6 @@
+[
+  "error NotApprovedByGateway()",
+  "function execute(bytes32,string,string,bytes)",
+  "function executeWithToken(bytes32,string,string,bytes,string,uint256)",
+  "function gateway() view returns (address)"
+]

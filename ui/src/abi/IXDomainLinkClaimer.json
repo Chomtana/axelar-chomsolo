@@ -1,0 +1,3 @@
+[
+  "function claimDomain(string) returns (bytes32)"
+]

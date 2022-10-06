@@ -1,0 +1,10 @@
+[
+  "constructor(address,address,bytes32,address,bytes32)",
+  "error NotTLDOwner()",
+  "function claimDomain(string) returns (bytes32)",
+  "function linkEns() view returns (address)",
+  "function linkParentNode() view returns (bytes32)",
+  "function rootEns() view returns (address)",
+  "function rootNameWrapper() view returns (address)",
+  "function rootNode() view returns (bytes32)"
+]

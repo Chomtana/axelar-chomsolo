@@ -131,6 +131,7 @@ abstract contract ERC1155Fuse is ERC165, IERC1155, IERC1155MetadataURI {
      */
     function getData(uint256 tokenId)
         public
+        virtual
         view
         returns (
             address owner,

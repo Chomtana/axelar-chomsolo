@@ -1,0 +1,15 @@
+[
+  "error InvalidCodeHash()",
+  "error InvalidImplementation()",
+  "error InvalidOwner()",
+  "error NotOwner()",
+  "error NotProxy()",
+  "error SetupFailed()",
+  "event OwnershipTransferred(address indexed)",
+  "event Upgraded(address indexed)",
+  "function contractId() pure returns (bytes32)",
+  "function implementation() view returns (address)",
+  "function owner() view returns (address)",
+  "function setup(bytes)",
+  "function upgrade(address,bytes32,bytes)"
+]

@@ -181,6 +181,7 @@ const config: HardhatUserConfig = {
       'Ownable$',
       'NameResolver$',
       'TestBytesUtils$',
+      'AggregatorInterface$',
       'legacy/*',
     ],
     spacing: 2,

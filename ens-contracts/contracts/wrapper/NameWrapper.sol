@@ -993,4 +993,17 @@ contract NameWrapper is
             revert Unauthorised(node, msg.sender);
         }
     }
+
+    function getData(uint256 tokenId)
+        public
+        override(INameWrapper, ERC1155Fuse)
+        view
+        returns (
+            address owner,
+            uint32 fuses,
+            uint64 expiry
+        ) 
+    {
+        return ERC1155Fuse.getData(tokenId);
+    }
 }
