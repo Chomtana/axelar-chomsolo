@@ -12,7 +12,7 @@ function computeInterfaceId(iface: Interface) {
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { getNamedAccounts, deployments, network } = hre
   const { deploy, fetchIfDifferent } = deployments
-  const { deployer, owner } = await getNamedAccounts()
+  const { deployer } = await getNamedAccounts()
 
   const registry = await ethers.getContract('ENSRegistry')
   const registrar = await ethers.getContract('BaseRegistrarImplementation')
@@ -30,9 +30,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   // Only attempt to make controller etc changes directly on testnets
   if(network.name === 'mainnet') return;
 
-  const tx = await registrar.addController(nameWrapper.address, {
-    from: owner,
-  })
+  const tx = await registrar.connect(await ethers.getSigner(deployer)).addController(nameWrapper.address)
   console.log(
     `Adding NameWrapper as controller on registrar (tx: ${tx.hash})...`,
   )

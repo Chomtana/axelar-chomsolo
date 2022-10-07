@@ -4,6 +4,7 @@ import { DeployFunction } from 'hardhat-deploy/types'
 import { HardhatRuntimeEnvironment } from 'hardhat/types'
 
 const { makeInterfaceId } = require('@openzeppelin/test-helpers')
+const axelarConfig = require('../../axelarConfig.json')
 
 function computeInterfaceId(iface: Interface) {
   return makeInterfaceId.ERC165(Object.values(iface.functions).map((frag) => frag.format("sighash")));
@@ -15,7 +16,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deployer } = await getNamedAccounts()
 
   const registrar = await ethers.getContract('BaseRegistrarImplementation')
-  const priceOracle = await ethers.getContract('ExponentialPremiumPriceOracle')
+  const priceOracle = await ethers.getContract('StablePriceOracleUSD')
   const reverseRegistrar = await ethers.getContract('ReverseRegistrar')
   const nameWrapper = await ethers.getContract('NameWrapper')
 
@@ -24,10 +25,13 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     args: [
       registrar.address,
       priceOracle.address,
-      60,
+      6, // 6 seconds for testnet testing
       86400,
       reverseRegistrar.address,
       nameWrapper.address,
+      axelarConfig.usdc[network.name],
+      axelarConfig.axelarGateway[network.name],
+      axelarConfig.axelarGasService[network.name],
     ],
     log: true,
   };

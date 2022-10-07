@@ -129,12 +129,12 @@ const config: HardhatUserConfig = {
   networks: {
     hardhat: {
       saveDeployments: false,
-      tags: ['test', 'legacy', 'use_root'],
+      tags: ['test', 'use_root'],
     },
     localhost: {
       url: 'http://127.0.0.1:8545',
       saveDeployments: false,
-      tags: ['test', 'legacy', 'use_root'],
+      tags: ['test', 'use_root'],
     },
     ropsten: {
       url: `https://ropsten.infura.io/v3/${process.env.INFURA_ID}`,
@@ -144,7 +144,7 @@ const config: HardhatUserConfig = {
     },
     goerli: {
       url: `https://goerli.infura.io/v3/${process.env.INFURA_ID}`,
-      tags: ['test', 'legacy', 'use_root'],
+      tags: ['test', 'use_root'],
       chainId: 5,
       accounts: real_accounts,
     },
