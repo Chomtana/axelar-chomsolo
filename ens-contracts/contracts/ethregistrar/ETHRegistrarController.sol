@@ -47,7 +47,7 @@ contract ETHRegistrarController is
 
     uint256 public constant MIN_REGISTRATION_DURATION = 28 days;
     bytes32 private constant ETH_NODE =
-        0x93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae;
+        0xa6ffbc01dce85b089ce59e53d7363ba0fd16b9ede2dd51ca82a2ffe8f39e5b15;
     uint64 private constant MAX_EXPIRY = type(uint64).max;
     BaseRegistrarImplementation immutable base;
     IPriceOracle public immutable prices;

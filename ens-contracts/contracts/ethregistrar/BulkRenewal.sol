@@ -14,7 +14,7 @@ contract BulkRenewal is IBulkRenewal {
     using SafeERC20 for IERC20;
 
     bytes32 private constant ETH_NAMEHASH =
-        0x93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae;
+        0xa6ffbc01dce85b089ce59e53d7363ba0fd16b9ede2dd51ca82a2ffe8f39e5b15;
 
     ENS public immutable ens;
 
