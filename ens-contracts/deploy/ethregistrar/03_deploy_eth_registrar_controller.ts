@@ -43,6 +43,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   // Only attempt to make controller etc changes directly on testnets
   if(network.name === 'mainnet') return;
 
+  console.log('ETHRegistrarController address', controller.address);
+
   const tx1 = await nameWrapper.setController(controller.address, {
     from: deployer,
   })

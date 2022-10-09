@@ -16,7 +16,7 @@ interface IETHRegistrarController {
         uint256,
         bytes32,
         address,
-        bytes[] calldata,
+        // bytes[] calldata,
         bool,
         uint32,
         uint64
@@ -30,7 +30,7 @@ interface IETHRegistrarController {
         uint256,
         bytes32,
         address,
-        bytes[] calldata,
+        // bytes[] calldata,
         bool,
         uint32,
         uint64

@@ -154,6 +154,18 @@ const config: HardhatUserConfig = {
       chainId: 1,
       accounts: real_accounts,
     },
+
+    polygon: {
+      url: "https://polygon-rpc.com",
+      chainId: 137,
+      accounts: real_accounts,
+    },
+    fantom: {
+      url: "https://rpcapi.fantom.network",
+      chainId: 250,
+      accounts: real_accounts,
+    },
+    
   },
   mocha: {},
   solidity: {

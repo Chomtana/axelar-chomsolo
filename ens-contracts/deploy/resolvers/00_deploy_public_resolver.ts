@@ -25,6 +25,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const publicResolver = await deploy('PublicResolver', deployArgs)
   if(!publicResolver.newlyDeployed) return;
 
+  console.log('PublicResolver address', publicResolver.address)
+
   const tx = await reverseRegistrar.setDefaultResolver(publicResolver.address, {
     from: deployer,
   })

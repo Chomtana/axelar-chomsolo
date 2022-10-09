@@ -130,15 +130,15 @@ contract ETHRegistrarController is
         uint256 duration,
         bytes32 secret,
         address resolver,
-        bytes[] calldata data,
+        // bytes[] calldata data,
         bool reverseRecord,
         uint32 fuses,
         uint64 wrapperExpiry
     ) public pure override returns (bytes32) {
         bytes32 label = keccak256(bytes(name));
-        if (data.length > 0 && resolver == address(0)) {
-            revert ResolverRequiredWhenDataSupplied();
-        }
+        // if (data.length > 0 && resolver == address(0)) {
+        //     revert ResolverRequiredWhenDataSupplied();
+        // }
         return
             keccak256(
                 abi.encode(
@@ -146,7 +146,7 @@ contract ETHRegistrarController is
                     owner,
                     duration,
                     resolver,
-                    data,
+                    // data,
                     secret,
                     reverseRecord,
                     fuses,
@@ -169,7 +169,7 @@ contract ETHRegistrarController is
         uint256 duration,
         bytes32 secret,
         address resolver,
-        bytes[] calldata data,
+        // bytes[] calldata data,
         bool reverseRecord,
         uint32 fuses,
         uint64 wrapperExpiry
@@ -187,7 +187,7 @@ contract ETHRegistrarController is
                 duration,
                 secret,
                 resolver,
-                data,
+                // data,
                 reverseRecord,
                 fuses,
                 wrapperExpiry
@@ -199,7 +199,7 @@ contract ETHRegistrarController is
             owner,
             duration,
             resolver,
-            data,
+            // data,
             reverseRecord,
             fuses,
             wrapperExpiry,
@@ -212,7 +212,7 @@ contract ETHRegistrarController is
         address owner,
         uint256 duration,
         address resolver,
-        bytes[] memory data,
+        // bytes[] memory data,
         bool reverseRecord,
         uint32 fuses,
         uint64 wrapperExpiry,
@@ -227,12 +227,17 @@ contract ETHRegistrarController is
             wrapperExpiry
         );
 
-        if (data.length > 0) {
-            _setRecords(resolver, keccak256(bytes(name)), data);
-        }
+        // if (data.length > 0) {
+        //     _setRecords(resolver, keccak256(bytes(name)), data);
+        // }
 
         if (reverseRecord) {
             _setReverseRecord(name, resolver, msg.sender);
+        }
+
+        if (resolver != address(0)) {
+            bytes32 nodehash = keccak256(abi.encodePacked(ETH_NODE, name));
+            Resolver(resolver).setAddr(nodehash, owner);
         }
 
         emit NameRegistered(
@@ -395,9 +400,10 @@ contract ETHRegistrarController is
         (
             string memory name,
             address owner,
+            address resolver,
             uint32 fuses,
             uint64 wrapperExpiry
-        ) = abi.decode(payload, (string, address, uint32, uint64));
+        ) = abi.decode(payload, (string, address, address, uint32, uint64));
 
         if (wrapperExpiry > block.timestamp) {
             // Only pay on source chain
@@ -408,9 +414,6 @@ contract ETHRegistrarController is
 
             // Only register domain to the expiry on the source chain
             uint256 duration = wrapperExpiry - block.timestamp;
-
-            // TODO: resolver is not known now
-            address resolver = address(0);
 
             // Clear commitment and give reward
             bytes32 nameHash = keccak256((bytes(name)));
@@ -425,7 +428,6 @@ contract ETHRegistrarController is
                 owner,
                 duration,
                 resolver,
-                new bytes[](0),
                 false,
                 fuses,
                 wrapperExpiry,

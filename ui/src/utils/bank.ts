@@ -87,22 +87,22 @@ export async function getAllBankAccounts(walletAddress: any) {
   return result;
 }
 
-export async function createBankAccount(signer: any, name: string) {
-  const bank = new ethers.Contract(BANK_ADDRESS, BankABI, signer);
-  return await bank.createBankAccount(name).then(tx => tx.wait());
-}
+// export async function createBankAccount(signer: any, name: string) {
+//   const bank = new ethers.Contract(BANK_ADDRESS, BankABI, signer);
+//   return await bank.createBankAccount(name).then(tx => tx.wait());
+// }
 
-export async function deposit(signer: any, tokenAddress: string, address: string, amount: string | BigNumber) {
-  const token = new ethers.Contract(tokenAddress, ERC20ABI, signer);
-  return await token.transfer(address, amount).then(tx => tx.wait());
-}
+// export async function deposit(signer: any, tokenAddress: string, address: string, amount: string | BigNumber) {
+//   const token = new ethers.Contract(tokenAddress, ERC20ABI, signer);
+//   return await token.transfer(address, amount).then(tx => tx.wait());
+// }
 
-export async function withdraw(signer: any, bankAccountAddress: string, tokenAddress: string, walletAddress: string, amount: string | BigNumber) {
-  const bankAccount = new ethers.Contract(bankAccountAddress, BankAccountABI, signer);
-  return await bankAccount.transfer(tokenAddress, walletAddress, amount).then(tx => tx.wait());
-}
+// export async function withdraw(signer: any, bankAccountAddress: string, tokenAddress: string, walletAddress: string, amount: string | BigNumber) {
+//   const bankAccount = new ethers.Contract(bankAccountAddress, BankAccountABI, signer);
+//   return await bankAccount.transfer(tokenAddress, walletAddress, amount).then(tx => tx.wait());
+// }
 
-export async function batchTransfer(signer: any, bankAccountAddress: string, tokenAddresses: string[], to: string[], amount: (string | BigNumber)[]) {
-  const bankAccount = new ethers.Contract(bankAccountAddress, BankAccountABI, signer);
-  return await bankAccount.batchTransfer(tokenAddresses, to, amount).then(tx => tx.wait());
-}
+// export async function batchTransfer(signer: any, bankAccountAddress: string, tokenAddresses: string[], to: string[], amount: (string | BigNumber)[]) {
+//   const bankAccount = new ethers.Contract(bankAccountAddress, BankAccountABI, signer);
+//   return await bankAccount.batchTransfer(tokenAddresses, to, amount).then(tx => tx.wait());
+// }
