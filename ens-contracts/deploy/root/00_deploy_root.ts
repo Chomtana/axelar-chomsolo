@@ -11,6 +11,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deployer, owner } = await getNamedAccounts()
 
   if (!network.tags.use_root) {
+    console.log('FUCK')
     return true
   }
 
@@ -59,7 +60,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   }
 
   // Set .axl owner to owner wallet
-  await root.connect(await ethers.getSigner(owner)).setSubnodeOwner(ethers.utils.keccak256(ethers.utils.toUtf8Bytes('axl')), owner);
+  const tx3 = await root.connect(await ethers.getSigner(owner)).setSubnodeOwner(ethers.utils.keccak256(ethers.utils.toUtf8Bytes('axl')), owner);
+  await tx3.wait();
 
   return true
 }
