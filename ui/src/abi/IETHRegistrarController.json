@@ -1,6 +1,6 @@
 [
   "function available(string) returns (bool)",
-  "function commit(bytes32)",
+  "function commit(bytes32,bytes32)",
   "function makeCommitment(string,address,uint256,bytes32,address,bytes[],bool,uint32,uint64) returns (bytes32)",
   "function register(string,address,uint256,bytes32,address,bytes[],bool,uint32,uint64)",
   "function renew(string,uint256)",
