@@ -4,6 +4,12 @@
 
 For documentation of the ENS system, see [docs.ens.domains](https://docs.ens.domains/).
 
+## Deployments
+
+### ETH Goerli
+
+
+
 ## npm package
 
 This repo doubles as an npm package with the compiled JSON contracts

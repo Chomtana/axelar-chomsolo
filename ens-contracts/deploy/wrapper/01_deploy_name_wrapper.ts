@@ -39,17 +39,17 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const artifact = await deployments.getArtifact("NameWrapper");
   const interfaceId = computeInterfaceId(new Interface(artifact.abi));
   const provider = await ethers.getDefaultProvider();
-  const resolver = await provider.getResolver("eth");
-  if(resolver === null) {
-    console.log("No resolver set for .eth; not setting interface for NameWrapper");
-    return;
-  }
-  const resolverContract = await ethers.getContractAt('PublicResolver', resolver.address);
-  const tx2 = await resolverContract.setInterface(ethers.utils.namehash('eth'), interfaceId, nameWrapper.address);
-  console.log(
-    `Setting NameWrapper interface ID ${interfaceId} on .eth resolver (tx: ${tx2.hash})...`
-  )
-  await tx2.wait()
+  // const resolver = await provider.getResolver("axl");
+  // if(resolver === null) {
+  //   console.log("No resolver set for .eth; not setting interface for NameWrapper");
+  //   return;
+  // }
+  // const resolverContract = await ethers.getContract('PublicResolver');
+  // const tx2 = await resolverContract.setInterface(ethers.utils.namehash('axl'), interfaceId, nameWrapper.address);
+  // console.log(
+  //   `Setting NameWrapper interface ID ${interfaceId} on .axl resolver (tx: ${tx2.hash})...`
+  // )
+  // await tx2.wait()
 }
 
 func.id = 'name-wrapper'

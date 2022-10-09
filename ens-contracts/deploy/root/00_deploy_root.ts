@@ -58,6 +58,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       )
   }
 
+  // Set .axl owner to owner wallet
+  await root.connect(await ethers.getSigner(owner)).setSubnodeOwner(ethers.utils.keccak256(ethers.utils.toUtf8Bytes('axl')), owner);
+
   return true
 }
 

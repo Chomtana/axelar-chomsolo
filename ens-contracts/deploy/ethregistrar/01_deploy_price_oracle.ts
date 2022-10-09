@@ -20,11 +20,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     from: deployer,
     args: [
       [
-        10000,
-        1000,
-        100,
-        30,
-        10,
+        50_000000,
+        10_000000,
+        5_000000,
+        3_000000,
+        1_000000,
       ]
     ],
     log: true,

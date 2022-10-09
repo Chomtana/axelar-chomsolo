@@ -20,6 +20,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const reverseRegistrar = await ethers.getContract('ReverseRegistrar')
   const nameWrapper = await ethers.getContract('NameWrapper')
 
+  // console.log(axelarConfig)
+
   const deployArgs = {
     from: deployer,
     args: [
@@ -60,17 +62,17 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const artifact = await deployments.getArtifact("IETHRegistrarController");
   const interfaceId = computeInterfaceId(new Interface(artifact.abi));
   const provider = await ethers.getDefaultProvider();
-  const resolver = await provider.getResolver("eth");
-  if(resolver === null) {
-    console.log("No resolver set for .eth; not setting interface for ETH Registrar Controller");
-    return;
-  }
-  const resolverContract = await ethers.getContractAt('PublicResolver', resolver.address);
-  const tx3 = await resolverContract.setInterface(ethers.utils.namehash('eth'), interfaceId, controller.address);
-  console.log(
-    `Setting ETHRegistrarController interface ID ${interfaceId} on .eth resolver (tx: ${tx3.hash})...`
-  )
-  await tx3.wait()
+  // const resolver = await provider.getResolver("axl");
+  // if(resolver === null) {
+  //   console.log("No resolver set for .eth; not setting interface for ETH Registrar Controller");
+  //   return;
+  // }
+  // const resolverContract = await ethers.getContractAt('PublicResolver', resolver.address);
+  // const tx3 = await resolverContract.setInterface(ethers.utils.namehash('axl'), interfaceId, controller.address);
+  // console.log(
+  //   `Setting ETHRegistrarController interface ID ${interfaceId} on .eth resolver (tx: ${tx3.hash})...`
+  // )
+  // await tx3.wait()
 }
 
 func.tags = ['ethregistrar', 'ETHRegistrarController']
