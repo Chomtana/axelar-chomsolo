@@ -11,7 +11,7 @@ import {
 import { parseEther } from "ethers/lib/utils";
 import React, { useCallback, useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import { createBankAccount, deposit, SUPPORTED_TOKENS } from "../utils/bank";
+import { SUPPORTED_TOKENS } from "../utils/bank";
 import TokenSelect from "./TokenSelect";
 
 export default function DepositDialog({
@@ -29,7 +29,7 @@ export default function DepositDialog({
   const handleDeposit = useCallback(async () => {
     try {
       setRunning(true);
-      await deposit(signer, tokenAddress, bankAddress, parseEther(amount));
+      // await deposit(signer, tokenAddress, bankAddress, parseEther(amount));
     } catch (err: any) {
       console.error(err);
       toast.error(err.error?.message || err.message);

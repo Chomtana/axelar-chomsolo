@@ -1,13 +1,14 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField } from "@mui/material";
 import React, { useCallback, useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import { addDomain, commitDomain, getDomainAvailability, registerDomain } from "../utils/ens";
+import { addDomain, approveWAXL, commitDomain, ENS_ADDRESS, getDomainAvailability, registerDomain } from "../utils/ens";
 
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 enum DomainRegistrationState {
   IDLE,
   CHECKING,
+  APPROVE,
   COMMIT,
   REGISTER,
 }
@@ -17,31 +18,30 @@ export default function RegisterDomainDialog({ open, handleClose, signer, refres
   const [duration, setDuration] = useState("1");
   const [state, setState] = useState<DomainRegistrationState>(DomainRegistrationState.IDLE)
 
-  const handleCreate = useCallback(async (domainName: string) => {
-    if (domainName != name) {
-      setName(domainName);
-    }
-
+  const handleCreate = useCallback(async () => {
     try {
-      const secret = "0x" + Math.floor(Math.random() * 1000000000).toString(16);
+      const secret = "0x" + Math.floor(Math.random() * 1000000000).toString(16).padStart(64, '0');
 
       setState(DomainRegistrationState.CHECKING);
 
-      const availability = await getDomainAvailability(domainName);
+      const availability = await getDomainAvailability(name);
 
       if (!availability) {
-        throw new Error("Domain " + domainName + " is not available");
+        throw new Error("Domain " + name + " is not available");
       }
 
       const chainId = await signer.getChainId();
+
+      setState(DomainRegistrationState.APPROVE);
+      await approveWAXL(chainId, signer, ENS_ADDRESS[chainId].ETHRegistrarController);
 
       setState(DomainRegistrationState.COMMIT);
       const commitment = await commitDomain(chainId, signer, name, parseInt(duration) * 31536000, secret);
       await wait(10000);
       setState(DomainRegistrationState.REGISTER);
       await registerDomain(chainId, signer, commitment.params);
-      await addDomain(await signer.getAddress(), domainName);
-      toast.success("Domain " + domainName + " successfully registered");
+      await addDomain(await signer.getAddress(), name);
+      toast.success("Domain " + name + " successfully registered");
     } catch (err: any) {
       console.error(err);
       toast.error(err.error?.message || err.message);
@@ -66,12 +66,9 @@ export default function RegisterDomainDialog({ open, handleClose, signer, refres
   }, [open])
 
   return (
-    <Dialog open={open} onClose={handleCloseWrapper}>
-      <DialogTitle>Create new account</DialogTitle>
+    <Dialog open={open} onClose={handleCloseWrapper} fullWidth={true}>
+      <DialogTitle>Register new domain</DialogTitle>
       <DialogContent>
-        <DialogContentText>
-          Domain name
-        </DialogContentText>
         <TextField
           autoFocus
           margin="dense"
@@ -85,9 +82,6 @@ export default function RegisterDomainDialog({ open, handleClose, signer, refres
           onChange={e => setName(e.target.value)}
         />
 
-        <DialogContentText>
-          Duration (Year)
-        </DialogContentText>
         <TextField
           autoFocus
           margin="dense"
@@ -102,8 +96,8 @@ export default function RegisterDomainDialog({ open, handleClose, signer, refres
         />
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleClose} disabled={state != DomainRegistrationState.IDLE}>Cancel</Button>
-        <Button onClick={() => handleCreate(name)} disabled={state != DomainRegistrationState.IDLE}>Create</Button>
+        <Button onClick={handleClose} disabled={state != DomainRegistrationState.IDLE} color="secondary">Cancel</Button>
+        <Button onClick={handleCreate} disabled={state != DomainRegistrationState.IDLE}>Register</Button>
       </DialogActions>
     </Dialog>
   )

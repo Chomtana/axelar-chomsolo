@@ -2,6 +2,7 @@ import { Interface } from 'ethers/lib/utils'
 import { ethers } from 'hardhat'
 import { DeployFunction } from 'hardhat-deploy/types'
 import { HardhatRuntimeEnvironment } from 'hardhat/types'
+import { keccak256 } from 'js-sha3'
 
 const { makeInterfaceId } = require('@openzeppelin/test-helpers')
 
@@ -17,6 +18,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const nameWrapper = await ethers.getContract('NameWrapper')
   const resolverContract = await ethers.getContract('PublicResolver')
   const controller = await ethers.getContract('ETHRegistrarController')
+  const registrar = await ethers.getContract('BaseRegistrarImplementation')
+  const root = await ethers.getContract('Root')
 
   const artifact = await deployments.getArtifact("NameWrapper");
   const interfaceId = computeInterfaceId(new Interface(artifact.abi));
@@ -34,10 +37,18 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     `Setting ETHRegistrarController interface ID ${interfaceId} on .eth resolver (tx: ${tx3.hash})...`
   )
   await tx3.wait()
+
+  const tx4 = await root
+    .connect(await ethers.getSigner(owner))
+    .setSubnodeOwner('0x' + keccak256('axl'), registrar.address)
+  console.log(
+    `Setting owner of eth node to registrar on root (tx: ${tx4.hash})...`,
+  )
+  await tx4.wait()
 }
 
 func.id = 'resolver-interface'
 func.tags = ['resolver-interface']
-func.dependencies = ['NameWrapper', 'PublicResolver', 'ETHRegistrarController']
+func.dependencies = ['NameWrapper', 'PublicResolver', 'ETHRegistrarController', 'Root', 'BaseRegistrarImplementation']
 
 export default func

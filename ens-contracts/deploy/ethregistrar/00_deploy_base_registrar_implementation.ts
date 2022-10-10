@@ -18,7 +18,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   const deployArgs = {
     from: deployer,
-    args: [registry.address, namehash.hash('eth')],
+    args: [registry.address, namehash.hash('axl')],
     log: true,
   };
 
@@ -31,13 +31,13 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   console.log(`Adding owner as controller to registrar (tx: ${tx1.hash})...`)
   await tx1.wait()
 
-  const tx2 = await root
-    .connect(await ethers.getSigner(owner))
-    .setSubnodeOwner('0x' + keccak256('eth'), registrar.address)
-  console.log(
-    `Setting owner of eth node to registrar on root (tx: ${tx2.hash})...`,
-  )
-  await tx2.wait()
+  // const tx2 = await root
+  //   .connect(await ethers.getSigner(owner))
+  //   .setSubnodeOwner('0x' + keccak256('axl'), registrar.address)
+  // console.log(
+  //   `Setting owner of eth node to registrar on root (tx: ${tx2.hash})...`,
+  // )
+  // await tx2.wait()
 }
 
 func.id = 'registrar'

@@ -13,11 +13,7 @@ import { parseEther } from "ethers/lib/utils";
 import React, { useCallback, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import {
-  batchTransfer,
-  createBankAccount,
-  deposit,
   SUPPORTED_TOKENS,
-  withdraw,
 } from "../utils/bank";
 import TokenSelect from "./TokenSelect";
 
@@ -38,13 +34,13 @@ export default function TransferDialog({
   const handleTransfer = useCallback(async () => {
     try {
       setRunning(true);
-      await batchTransfer(
-        signer,
-        bankAddress,
-        tokenAddress,
-        name,
-        amount.map((x) => parseEther(x))
-      );
+      // await batchTransfer(
+      //   signer,
+      //   bankAddress,
+      //   tokenAddress,
+      //   name,
+      //   amount.map((x) => parseEther(x))
+      // );
     } catch (err: any) {
       console.error(err);
       toast.error(err.error?.message || err.message);

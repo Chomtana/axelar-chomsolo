@@ -5,7 +5,7 @@ import {
   ContractCallContext,
 } from 'ethereum-multicall';
 
-import ERC20ABI from "../abi/ERC20.json"
+import ERC20ABI from "../abi/IERC20.json"
 import { getBalancesForEthereumAddress, getBalancesForEthereumAddresses, Token } from "ethereum-erc20-token-balances-multicall";
 
 export const BANK_ADDRESS = "0x79A3840E610590A78d94EC428E9d1AFbDC225F8e";

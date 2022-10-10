@@ -12,7 +12,7 @@ import {
 import { parseEther } from "ethers/lib/utils";
 import React, { useCallback, useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import { createBankAccount, deposit, SUPPORTED_TOKENS, withdraw } from "../utils/bank";
+import { SUPPORTED_TOKENS } from "../utils/bank";
 import TokenSelect from "./TokenSelect";
 
 export default function WithdrawDialog({
@@ -30,7 +30,7 @@ export default function WithdrawDialog({
   const handleWithdraw = useCallback(async () => {
     try {
       setRunning(true);
-      await withdraw(signer, bankAddress, tokenAddress, address, parseEther(amount));
+      // await withdraw(signer, bankAddress, tokenAddress, address, parseEther(amount));
     } catch (err: any) {
       console.error(err);
       toast.error(err.error?.message || err.message);

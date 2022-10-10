@@ -1,19 +1,20 @@
-import { Contract, Signer, utils } from "ethers";
+import { BigNumber, Contract, ethers, Signer, utils } from "ethers";
 
 import ENSRegistryABI from "../abi/ENSRegistry.json";
 import ETHRegistrarControllerABI from "../abi/ETHRegistrarController.json";
 import NameWrapperABI from "../abi/NameWrapper.json";
 import PublicResolverABI from "../abi/PublicResolver.json";
+import ERC20ABI from "../abi/IERC20.json";
 
 const ADDRESS_ZERO = "0x0000000000000000000000000000000000000000";
 
 export const ENS_ADDRESS = {
   5: {
     "WAXL": "0x23ee2343B892b1BB63503a4FAbc840E0e2C6810f",
-    "ENSRegistry": "0x52b8f0537dfeB9c7f8F3d4A0C868BB63F8fed044",
-    "ETHRegistrarController": "0xA4E95fFfDd3115e8e9d6b2897fD1E89ff4B1680E",
-    "NameWrapper": "0x65Cf117A5FE8E1Dc4a5578cF98CB9A3a0a12FFb7",
-    "PublicResolver": "0x62950cEd133FabD4417e68C92a8031Fa36a12eC6",
+    "ENSRegistry": "0xf7AEB7f57B3Ae41dAE3793545A6BF792C4c18688",
+    "ETHRegistrarController": "0x156980EC73fC9ff9fcF73e03c09365e7b3E45d7D",
+    "NameWrapper": "0xbb8e47057b41035c52C4Cc066b9E298de660Cc72",
+    "PublicResolver": "0x7e82FA9f9718a23cA4813D434C035b3Ca5C58Cc2",
     "RPC_URL": "https://goerli.infura.io/v3/8471ad43100b48029d2ecf04a763c230",
   },
   // 97: {
@@ -72,20 +73,28 @@ export interface DomainCompleteData {
   chains: DomainChainData[];
 }
 
-export function getENSRegistry(chainId, signer?: Signer): Contract {
+export function getENSRegistry(chainId, signer: Signer | ethers.providers.Provider): Contract {
   return new Contract(ENS_ADDRESS[chainId].ENSRegistry, ENSRegistryABI, signer);
 }
 
-export function getETHRegistrarController(chainId, signer?: Signer): Contract {
+export function getETHRegistrarController(chainId, signer: Signer | ethers.providers.Provider): Contract {
   return new Contract(ENS_ADDRESS[chainId].ETHRegistrarController, ETHRegistrarControllerABI, signer);
 }
 
-export function getNameWrapper(chainId, signer?: Signer): Contract {
+export function getNameWrapper(chainId, signer: Signer | ethers.providers.Provider): Contract {
   return new Contract(ENS_ADDRESS[chainId].NameWrapper, NameWrapperABI, signer);
 }
 
-export function getPublicResolver(chainId, signer?: Signer): Contract {
+export function getPublicResolver(chainId, signer: Signer | ethers.providers.Provider): Contract {
   return new Contract(ENS_ADDRESS[chainId].PublicResolver, PublicResolverABI, signer);
+}
+
+export function getWAXL(chainId, signer: Signer | ethers.providers.Provider): Contract {
+  return new Contract(ENS_ADDRESS[chainId].WAXL, ERC20ABI, signer);
+}
+
+export function getProvider(chainId) {
+  return new ethers.providers.JsonRpcProvider(ENS_ADDRESS[chainId].RPC_URL);
 }
 
 export function getNameHash(domain: string) {
@@ -114,6 +123,19 @@ export function addDomain(walletAddress: string, domain: string) {
   window.localStorage.setItem("CHOMSOLO_AXLDOMAINS_LIST_" + walletAddress.toLowerCase(), JSON.stringify(domainsList));
 }
 
+export async function approveWAXL(chainId, signer: Signer, contractAddress: string) {
+  const WAXL = getWAXL(chainId, signer);
+
+  // Check allowance
+  const allowance: BigNumber = await WAXL.allowance(await signer.getAddress(), contractAddress);
+  // Don't do this in production
+  if (allowance.gte(ethers.constants.MaxInt256)) {
+    return;
+  }
+
+  await (await WAXL.approve(contractAddress, ethers.constants.MaxUint256)).wait();
+}
+
 export async function commitDomain(
   chainId,
   signer: Signer,
@@ -132,11 +154,25 @@ export async function commitDomain(
     Math.floor(Date.now() / 1000) + duration,
   ];
 
+  console.log(params)
+
   const nameHash = getNameHashSimple(name);
 
   const ETHRegistrarController = getETHRegistrarController(chainId, signer);
 
+  console.log(ETHRegistrarController)
+
   const commitment = await ETHRegistrarController.makeCommitment(...params);
+  // const commitment = await ETHRegistrarController.makeCommitment(
+  //   "chom.axl",
+  //   "0xf01Dd015Bc442d872275A79b9caE84A6ff9B2A27",
+  //   31536000,
+  //   "0x0000000000000000000000000000000000000000000000000000000036f6dc76",
+  //   "0x62950cEd133FabD4417e68C92a8031Fa36a12eC6",
+  //   false,
+  //   0,
+  //   1696959282,
+  // );
 
   await (await ETHRegistrarController.commit(commitment, nameHash)).wait();
 
@@ -152,7 +188,7 @@ export async function registerDomain(
   commitmentParams: any[],
 ) {
   const ETHRegistrarController = getETHRegistrarController(chainId, signer);
-  await (await ETHRegistrarController.register(...commitmentParams)).wait();
+  await (await ETHRegistrarController.register(...commitmentParams, { gasLimit: 10000000 })).wait();
 }
 
 export async function getDomainOwnerAndChainInfo(domain: string) {
@@ -163,7 +199,7 @@ export async function getDomainOwnerAndChainInfo(domain: string) {
   const chains: number[] = [];
 
   for (const chainId in ENS_ADDRESS) {
-    const NameWrapper = getNameWrapper(chainId);
+    const NameWrapper = getNameWrapper(chainId, getProvider(chainId));
     const owner = await NameWrapper.ownerOf(node);
 
     if (owner != ADDRESS_ZERO) {
@@ -182,11 +218,18 @@ export async function getDomainOwner(domain: string) {
   return (await getDomainOwnerAndChainInfo(domain)).owner;
 }
 
-export async function getDomainAddress(chainId, domain: string) {
+export async function getDomainAddress(chainId, domain: string): Promise<string> {
   const node = getNameHash(domain);
 
-  const PublicResolver = getPublicResolver(chainId);
+  const PublicResolver = getPublicResolver(chainId, getProvider(chainId));
   return await PublicResolver.addr(node);
+}
+
+export async function setDomainAddress(chainId, signer: Signer, domain: string, address: string) {
+  const node = getNameHash(domain);
+
+  const PublicResolver = getPublicResolver(chainId, signer);
+  await (await PublicResolver.setAddr(node, address)).wait();
 }
 
 export async function getDomainAvailability(domain: string) {
@@ -201,7 +244,7 @@ export async function getDomainData(domain): Promise<DomainCompleteData> {
   const chains: DomainChainData[] = [];
 
   for (const chainId in ENS_ADDRESS) {
-    const NameWrapper = getNameWrapper(chainId);
+    const NameWrapper = getNameWrapper(chainId, getProvider(chainId));
     const { domainOwner, fuses, expiry } = await NameWrapper.getData(nameHash);
     if (domainOwner != ADDRESS_ZERO) {
       owner = domainOwner;

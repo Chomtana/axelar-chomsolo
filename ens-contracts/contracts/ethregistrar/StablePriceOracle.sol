@@ -46,15 +46,15 @@ contract StablePriceOracle is IPriceOracle {
         uint256 basePrice;
 
         if (len >= 5) {
-            basePrice = price5Letter * duration;
+            basePrice = price5Letter * duration / 365 days;
         } else if (len == 4) {
-            basePrice = price4Letter * duration;
+            basePrice = price4Letter * duration / 365 days;
         } else if (len == 3) {
-            basePrice = price3Letter * duration;
+            basePrice = price3Letter * duration / 365 days;
         } else if (len == 2) {
-            basePrice = price2Letter * duration;
+            basePrice = price2Letter * duration / 365 days;
         } else {
-            basePrice = price1Letter * duration;
+            basePrice = price1Letter * duration / 365 days;
         }
 
         return
