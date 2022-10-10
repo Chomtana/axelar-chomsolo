@@ -5,30 +5,86 @@ import ETHRegistrarControllerABI from "../abi/ETHRegistrarController.json";
 import NameWrapperABI from "../abi/NameWrapper.json";
 import PublicResolverABI from "../abi/PublicResolver.json";
 
+const ADDRESS_ZERO = "0x0000000000000000000000000000000000000000";
+
 export const ENS_ADDRESS = {
   5: {
-    "ENSRegistry": "0x7a04Ea1F1707e2Ef3db4AD0fB24DCe4692a770cc",
-    "ETHRegistrarController": "0xed5696b468900ba43fe5e3f78ee76d5c8570ed0f",
-    "NameWrapper": "0xe4b95BcD24d220c1A17E0B8a060c7c18e7B8A551",
-    "PublicResolver": "0xbabae30B81d09Bb76B0f7FBa54a7Ab86f5891D07",
-  }
+    "WAXL": "0x23ee2343B892b1BB63503a4FAbc840E0e2C6810f",
+    "ENSRegistry": "0x52b8f0537dfeB9c7f8F3d4A0C868BB63F8fed044",
+    "ETHRegistrarController": "0xA4E95fFfDd3115e8e9d6b2897fD1E89ff4B1680E",
+    "NameWrapper": "0x65Cf117A5FE8E1Dc4a5578cF98CB9A3a0a12FFb7",
+    "PublicResolver": "0x62950cEd133FabD4417e68C92a8031Fa36a12eC6",
+    "RPC_URL": "https://goerli.infura.io/v3/8471ad43100b48029d2ecf04a763c230",
+  },
+  // 97: {
+  //   "WAXL": "0xfC3B4feb754d8082F745940347600D373f03dcaC",
+  //   "ENSRegistry": "",
+  //   "ETHRegistrarController": "",
+  //   "NameWrapper": "",
+  //   "PublicResolver": "",
+  //   "RPC_URL": "https://data-seed-prebsc-2-s3.binance.org:8545",
+  // },
+  // 43113: {
+  //   "WAXL": "0xa8B51e6517f9A6Ab7b247bF10b71b1A738eD8E50",
+  //   "ENSRegistry": "",
+  //   "ETHRegistrarController": "",
+  //   "NameWrapper": "",
+  //   "PublicResolver": "",
+  //   "RPC_URL": "https://api.avax-test.network/ext/bc/C/rpc",
+  // },
+  // 4002: {
+  //   "WAXL": "0x66A5df72619982a2Ef49e8317079b6806d56f66B",
+  //   "ENSRegistry": "",
+  //   "ETHRegistrarController": "",
+  //   "NameWrapper": "",
+  //   "PublicResolver": "",
+  //   "RPC_URL": "https://rpc.testnet.fantom.network/",
+  // },
+  // 1287: {
+  //   "WAXL": "0xB4D56B6AD4DD2B48e68D2a26C25A04dC1c0eE393",
+  //   "ENSRegistry": "",
+  //   "ETHRegistrarController": "",
+  //   "NameWrapper": "",
+  //   "PublicResolver": "",
+  //   "RPC_URL": "https://rpc.testnet.moonbeam.network/",
+  // },
+  // 80001: {
+  //   "WAXL": "0x9c79782d2B13CAC0Fa2FB00D188104fe6f98E533",
+  //   "ENSRegistry": "",
+  //   "ETHRegistrarController": "",
+  //   "NameWrapper": "",
+  //   "PublicResolver": "",
+  //   "RPC_URL": "https://matic-mumbai.chainstacklabs.com",
+  // },
 }
 
 export const COMMIT_TIME = 10; // 10 seconds for testnet
 
-export function getENSRegistry(chainId, signer: Signer): Contract {
+export interface DomainChainData {
+  chainId: number;
+  address: string;
+}
+
+export interface DomainCompleteData {
+  name: string;
+  owner: string;
+  expire: number;
+  chains: DomainChainData[];
+}
+
+export function getENSRegistry(chainId, signer?: Signer): Contract {
   return new Contract(ENS_ADDRESS[chainId].ENSRegistry, ENSRegistryABI, signer);
 }
 
-export function getETHRegistrarController(chainId, signer: Signer): Contract {
+export function getETHRegistrarController(chainId, signer?: Signer): Contract {
   return new Contract(ENS_ADDRESS[chainId].ETHRegistrarController, ETHRegistrarControllerABI, signer);
 }
 
-export function getNameWrapper(chainId, signer: Signer): Contract {
+export function getNameWrapper(chainId, signer?: Signer): Contract {
   return new Contract(ENS_ADDRESS[chainId].NameWrapper, NameWrapperABI, signer);
 }
 
-export function getPublicResolver(chainId, signer: Signer): Contract {
+export function getPublicResolver(chainId, signer?: Signer): Contract {
   return new Contract(ENS_ADDRESS[chainId].PublicResolver, PublicResolverABI, signer);
 }
 
@@ -99,3 +155,71 @@ export async function registerDomain(
   await (await ETHRegistrarController.register(...commitmentParams)).wait();
 }
 
+export async function getDomainOwnerAndChainInfo(domain: string) {
+  const node = getNameHash(domain);
+
+  // Iterate over all chains
+  let result = ADDRESS_ZERO;
+  const chains: number[] = [];
+
+  for (const chainId in ENS_ADDRESS) {
+    const NameWrapper = getNameWrapper(chainId);
+    const owner = await NameWrapper.ownerOf(node);
+
+    if (owner != ADDRESS_ZERO) {
+      result = owner;
+      chains.push(parseInt(chainId));
+    }
+  }
+
+  return {
+    owner: result,
+    chains: chains,
+  }
+}
+
+export async function getDomainOwner(domain: string) {
+  return (await getDomainOwnerAndChainInfo(domain)).owner;
+}
+
+export async function getDomainAddress(chainId, domain: string) {
+  const node = getNameHash(domain);
+
+  const PublicResolver = getPublicResolver(chainId);
+  return await PublicResolver.addr(node);
+}
+
+export async function getDomainAvailability(domain: string) {
+  return await getDomainOwner(domain) === ADDRESS_ZERO;
+}
+
+export async function getDomainData(domain): Promise<DomainCompleteData> {
+  const nameHash = getNameHash(domain);
+
+  let owner = ADDRESS_ZERO;
+  let globalExpiry = 0;
+  const chains: DomainChainData[] = [];
+
+  for (const chainId in ENS_ADDRESS) {
+    const NameWrapper = getNameWrapper(chainId);
+    const { domainOwner, fuses, expiry } = await NameWrapper.getData(nameHash);
+    if (domainOwner != ADDRESS_ZERO) {
+      owner = domainOwner;
+      globalExpiry = expiry;
+
+      const address = await getDomainAddress(chainId, domain);
+
+      chains.push({
+        address,
+        chainId: parseInt(chainId),
+      });
+    }
+  }
+
+  return {
+    chains,
+    owner,
+    expire: globalExpiry * 1000,
+    name: domain,
+  }
+}

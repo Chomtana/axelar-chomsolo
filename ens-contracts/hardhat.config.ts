@@ -155,6 +155,33 @@ const config: HardhatUserConfig = {
       accounts: real_accounts,
     },
 
+    bsctestnet: {
+      url: "https://data-seed-prebsc-2-s3.binance.org:8545",
+      chainId: 97,
+      gasPrice: 20000000000,
+      accounts: real_accounts
+    },
+    polygontestnet: {
+      url: "https://matic-mumbai.chainstacklabs.com",
+      chainId: 80001,
+      accounts: real_accounts
+    },
+    avaxtestnet: {
+      url: "https://api.avax-test.network/ext/bc/C/rpc",
+      chainId: 43113,
+      accounts: real_accounts
+    },
+    fantomtestnet: {
+      url: "https://rpc.testnet.fantom.network/",
+      chainId: 4002,
+      accounts: real_accounts
+    },
+    moonbeamtestnet: {
+      url: "https://rpc.testnet.moonbeam.network/",
+      chainId: 1287,
+      accounts: real_accounts
+    },
+
     polygon: {
       url: "https://polygon-rpc.com",
       chainId: 137,

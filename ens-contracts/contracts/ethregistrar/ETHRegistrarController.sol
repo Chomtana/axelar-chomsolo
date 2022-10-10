@@ -447,7 +447,7 @@ contract ETHRegistrarController is
     }
 
     function bridgeDomain(string memory name, string memory destinationChain, string memory destinationAddress) public payable {
-        bytes32 labelHash = keccak256(bytes(name));
+        bytes32 labelHash = keccak256(abi.encodePacked(ETH_NODE, keccak256(bytes(name))));
 
         (address domainOwner, uint32 fuses, uint64 expiry) = nameWrapper.getData(uint256(labelHash));
 

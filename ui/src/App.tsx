@@ -3,11 +3,6 @@ import logo from "./logo.svg";
 import "./App.css";
 import ConnectWalletButton from "./components/ConnectWalletButton";
 import {
-  BankAccountData,
-  getAllBankAccounts,
-  getBankAccountTokens,
-} from "./utils/bank";
-import {
   Box,
   AppBar,
   Toolbar,
@@ -22,20 +17,23 @@ import {
 import { Container } from "@mui/system";
 import { useSigner } from "./hooks/useSigner";
 import { useConnectWallet } from "./store/web3Modal/connectWallet";
-import CreateAccountDialog from "./components/CreateAccountDialog";
+import RegisterDomainDialog from "./components/RegisterDomainDialog";
 import addressParse from "./utils/addressParse";
 import DepositDialog from "./components/DepositDialog";
 import WithdrawDialog from "./components/WithdrawDialog";
 import TransferDialog from "./components/TransferDialog";
+import DomainCard from "./components/DomainCard";
+import { getDomainsList } from "./utils/ens";
 
 function App() {
   const signer = useSigner();
   const { connectWallet, web3, address, networkId, connected } =
     useConnectWallet();
 
-  const [bankAccounts, setBankAccounts] = useState<BankAccountData[]>([]);
+  const [refreshToken, setRefreshToken] = useState(Math.random())
+  const [domains, setDomains] = useState<string[]>([]);
 
-  const [showCreateAccountDialog, setShowCreateAccountDialog] = useState(false);
+  const [showRegisterDomainDialog, setShowRegisterDomainDialog] = useState(false);
   const [showDepositDialog, setShowDepositDialog] = useState<string | null>(
     null
   );
@@ -50,8 +48,9 @@ function App() {
 
   const refreshData = useCallback(async () => {
     setLoading(true);
-    setBankAccounts(await getAllBankAccounts(address));
+    setDomains(await getDomainsList(address));
     setLoading(false);
+    setRefreshToken(Math.random());
   }, [address]);
 
   useEffect(() => {
@@ -103,77 +102,8 @@ function App() {
                 My Domains
               </Typography>
 
-              {bankAccounts.map((bankAccount) => (
-                <Card
-                  sx={{ minWidth: 275 }}
-                  style={{ marginTop: 16 }}
-                  key={bankAccount.address}
-                >
-                  <CardContent>
-                    <Typography variant="h5" gutterBottom>
-                      {bankAccount.name}
-                    </Typography>
-
-                    <Typography color="text.secondary" variant="body2">
-                      {addressParse(bankAccount.address)}
-                    </Typography>
-
-                    <Typography marginTop={1}>
-                      {bankAccount.tokens.map((token) => (
-                        <div>
-                          {token.balance} {token.symbol}
-                        </div>
-                      ))}
-                    </Typography>
-
-                    <Typography marginTop={1}>
-                      <div>
-                        <a
-                          href={
-                            "https://goerli.etherscan.io/address/" +
-                            bankAccount.address
-                          }
-                          target="_blank"
-                        >
-                          View on Etherscan
-                        </a>
-                      </div>
-
-                      <div>
-                        <a
-                          href={
-                            "https://apeboard.finance/dashboard/" +
-                            bankAccount.address
-                          }
-                          target="_blank"
-                        >
-                          View on Apeboard
-                        </a>
-                      </div>
-                    </Typography>
-                  </CardContent>
-
-                  <CardActions>
-                    <Button
-                      size="small"
-                      onClick={() => setShowDepositDialog(bankAccount.address)}
-                    >
-                      Bridge
-                    </Button>
-                    <Button
-                      size="small"
-                      onClick={() => setShowWithdrawDialog(bankAccount.address)}
-                    >
-                      Link
-                    </Button>
-                    <Button
-                      size="small"
-                      onClick={() => setShowTransferDialog(bankAccount.address)}
-                    >
-                      Renew
-                    </Button>
-                  </CardActions>
-                </Card>
+              {domains.map((domain) => (
+                <DomainCard domain={domain} refreshToken={refreshToken} ></DomainCard>
               ))}
 
               <div style={{ marginTop: 16 }}>
@@ -181,7 +111,7 @@ function App() {
                   variant="contained"
                   fullWidth
                   size="large"
-                  onClick={() => setShowCreateAccountDialog(true)}
+                  onClick={() => setShowRegisterDomainDialog(true)}
                 >
                   + Register new domain
                 </Button>
@@ -200,12 +130,12 @@ function App() {
         )}
       </Container>
 
-      <CreateAccountDialog
-        open={showCreateAccountDialog}
-        handleClose={() => setShowCreateAccountDialog(false)}
+      <RegisterDomainDialog
+        open={showRegisterDomainDialog}
+        handleClose={() => setShowRegisterDomainDialog(false)}
         signer={signer}
         refreshData={refreshData}
-      ></CreateAccountDialog>
+      ></RegisterDomainDialog>
 
       <DepositDialog
         open={Boolean(showDepositDialog)}
