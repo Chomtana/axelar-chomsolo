@@ -155,42 +155,36 @@ const config: HardhatUserConfig = {
       accounts: real_accounts,
     },
 
-    bsctestnet: {
+    bsc: {
       url: "https://data-seed-prebsc-2-s3.binance.org:8545",
+      tags: ['test', 'use_root'],
       chainId: 97,
       gasPrice: 20000000000,
       accounts: real_accounts
     },
-    polygontestnet: {
+    polygon: {
       url: "https://matic-mumbai.chainstacklabs.com",
+      tags: ['test', 'use_root'],
       chainId: 80001,
       accounts: real_accounts
     },
-    avaxtestnet: {
+    avalanche: {
       url: "https://api.avax-test.network/ext/bc/C/rpc",
+      tags: ['test', 'use_root'],
       chainId: 43113,
       accounts: real_accounts
     },
-    fantomtestnet: {
+    fantom: {
       url: "https://rpc.testnet.fantom.network/",
+      tags: ['test', 'use_root'],
       chainId: 4002,
       accounts: real_accounts
     },
-    moonbeamtestnet: {
+    moonbase: {
       url: "https://rpc.testnet.moonbeam.network/",
+      tags: ['test', 'use_root'],
       chainId: 1287,
       accounts: real_accounts
-    },
-
-    polygon: {
-      url: "https://polygon-rpc.com",
-      chainId: 137,
-      accounts: real_accounts,
-    },
-    fantom: {
-      url: "https://rpcapi.fantom.network",
-      chainId: 250,
-      accounts: real_accounts,
     },
     
   },
@@ -231,9 +225,10 @@ const config: HardhatUserConfig = {
       default: 0,
     },
     owner: {
-      default: 1,
-      goerli: 0,
-      ropsten: 0,
+      default: 0,
+      // default: 1,
+      // goerli: 0,
+      // ropsten: 0,
     },
   },
   external: {

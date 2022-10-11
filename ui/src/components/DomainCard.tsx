@@ -4,10 +4,13 @@ import CardContent from "@mui/material/CardContent"
 import React, { useCallback, useEffect, useState } from "react"
 import { toast } from "react-toastify"
 import addressParse from "../utils/addressParse"
-import { DomainCompleteData, getDomainData, setDomainAddress } from "../utils/ens"
+import { bridgeDomain, DomainCompleteData, getDomainData, getDomainExistsInChain, setDomainAddress } from "../utils/ens"
+
+const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 export default function DomainCard({ domain, signer, refreshToken }) {
   const [data, setData] = useState<DomainCompleteData | undefined>();
+  const [bridgingTx, setBridgingTx] = useState<any>({});
 
   const refreshData = useCallback(async () => {
     setData(await getDomainData(domain));
@@ -43,18 +46,51 @@ export default function DomainCard({ domain, signer, refreshToken }) {
         {data.chains.map((chain) => (
           <div key={chain.chainId}>
             <Typography marginTop={1}>
-              {chain.chainId}&nbsp;
+              {chain.name}: &nbsp;
 
-              {chain.address}&nbsp;
-              <a href="#" onClick={async () => {
-                const walletAddress = window.prompt('Please enter a new wallet address for domain ' + data.name + ' chain ' + chain.name);
-                if (walletAddress) {
+              {chain.enabled ? <>
+                {chain.address}&nbsp;
+                <a href="#" onClick={async () => {
+                  const walletAddress = window.prompt('Please enter a new wallet address for domain ' + data.name + ' chain ' + chain.name);
+                  if (walletAddress) {
+                    toast.info('Please confirm transaction in your wallet');
+                    await setDomainAddress(chain.chainId, signer, data.name, walletAddress);
+                    refreshData();
+                    toast.success('Domain wallet address changed')
+                  }
+                }}>Change</a>
+              </> : <>
+                <a
+                  href={bridgingTx[chain.chainId] ? "https://testnet.axelarscan.io/gmp/" + bridgingTx[chain.chainId] : "#"}
+                  target={bridgingTx[chain.chainId] ? "_blank" : ""}
+                  onClick={async () => {
+                  if (bridgingTx[chain.chainId]) return;
+
+                  const name = data.name.split('.').slice(0, -1).join('.');
+                  const sourceChainId = await signer.getChainId();
+
+                  if (!data.chains.find(x => x.chainId == sourceChainId)?.enabled) {
+                    toast.warning('Please switch chain in your wallet to a chain that domain ' + data.name + ' is currently exists');
+                    return;
+                  }
+
                   toast.info('Please confirm transaction in your wallet');
-                  await setDomainAddress(chain.chainId, signer, data.name, walletAddress);
+                  const tx = await bridgeDomain(name, signer, sourceChainId, chain.chainId);
+                  console.log(tx);
+                  bridgingTx[chain.chainId] = tx.hash;
+                  setBridgingTx({...bridgingTx});
+
+                  while (!(await getDomainExistsInChain(chain.chainId, data.name))) {
+                    await wait(5000);
+                  }
+
+                  toast.success('Domain successfully bridged to chain ' + chain.name);
                   refreshData();
-                  toast.success('Domain wallet address changed')
-                }
-              }}>Change</a>
+                }}>
+                  {bridgingTx[chain.chainId] ? "Bridging (Tx: " + bridgingTx[chain.chainId] + ")" : "Enable"}
+                </a>
+              </>}
+
             </Typography>
 
           </div>

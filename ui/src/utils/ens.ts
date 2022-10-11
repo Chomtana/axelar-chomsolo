@@ -42,14 +42,14 @@ export const ENS_ADDRESS = {
   //   "PublicResolver": "",
   //   "RPC_URL": "https://rpc.testnet.fantom.network/",
   // },
-  // 1287: {
-  //   "WAXL": "0xB4D56B6AD4DD2B48e68D2a26C25A04dC1c0eE393",
-  //   "ENSRegistry": "",
-  //   "ETHRegistrarController": "",
-  //   "NameWrapper": "",
-  //   "PublicResolver": "",
-  //   "RPC_URL": "https://rpc.testnet.moonbeam.network/",
-  // },
+  1287: {
+    "WAXL": "0xB4D56B6AD4DD2B48e68D2a26C25A04dC1c0eE393",
+    "ENSRegistry": "0x7D35D5Bc1Ad11a82a2ea68f629Bb4a4632fE5777",
+    "ETHRegistrarController": "0x96277aA0f41Bf47cAb788cCE3b710a8b2542cEc3",
+    "NameWrapper": "0xed5696b468900Ba43Fe5E3f78eE76D5c8570Ed0f",
+    "PublicResolver": "0xE5a7fE5464513806ad89D589716C9764289cc4c2",
+    "RPC_URL": "https://rpc.testnet.moonbeam.network/",
+  },
   // 80001: {
   //   "WAXL": "0x9c79782d2B13CAC0Fa2FB00D188104fe6f98E533",
   //   "ENSRegistry": "",
@@ -225,6 +225,13 @@ export async function registerDomain(
   await (await ETHRegistrarController.register(...commitmentParams)).wait();
 }
 
+export async function getDomainExistsInChain(chainId, domain: string) {
+  const node = getNameHash(domain);
+  const NameWrapper = getNameWrapper(chainId, getProvider(chainId));
+  const owner = await NameWrapper.ownerOf(node);
+  return owner != ADDRESS_ZERO;
+}
+
 export async function getDomainOwnerAndChainInfo(domain: string) {
   const node = getNameHash(domain);
 
@@ -331,4 +338,13 @@ export async function bridgeDomain(name, signer, sourceChainId, destinationChain
   const tx = await ETHRegistrarController.bridgeDomain(name, CROSS_CHAIN_CONFIG[destinationChainId].name, ENS_ADDRESS[destinationChainId].ETHRegistrarController, ENS_ADDRESS[destinationChainId].PublicResolver, { value: gasFee })
 
   return tx;
+}
+
+export async function setSubnodeOwner(chainId, signer, parentDomain, subname, owner) {
+  const NameWrapper = getNameWrapper(chainId, signer);
+  const nameHash = getNameHash(parentDomain);
+
+  const [ domainOwner, fuses, expiry ] = await NameWrapper.getData(BigNumber.from(nameHash).toString());
+
+  await (await NameWrapper.setSubnodeOwner(nameHash, subname, owner, 0, expiry)).wait();
 }
