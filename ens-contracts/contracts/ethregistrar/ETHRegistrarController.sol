@@ -236,7 +236,7 @@ contract ETHRegistrarController is
         }
 
         if (resolver != address(0)) {
-            bytes32 nodehash = keccak256(abi.encodePacked(ETH_NODE, name));
+            bytes32 nodehash = keccak256(abi.encodePacked(ETH_NODE, keccak256(bytes(name))));
             Resolver(resolver).setAddr(nodehash, owner);
         }
 
@@ -446,14 +446,23 @@ contract ETHRegistrarController is
         _execute(sourceChain, sourceAddress, payload);
     }
 
-    function bridgeDomain(string memory name, string memory destinationChain, string memory destinationAddress) public payable {
+    // Just for test
+    function forceExecute(
+        string memory sourceChain,
+        string memory sourceAddress,
+        bytes calldata payload
+    ) public {
+        _execute(sourceChain, sourceAddress, payload);
+    }
+
+    function bridgeDomain(string memory name, string memory destinationChain, string memory destinationAddress, address destinationResolver) public payable {
         bytes32 labelHash = keccak256(abi.encodePacked(ETH_NODE, keccak256(bytes(name))));
 
         (address domainOwner, uint32 fuses, uint64 expiry) = nameWrapper.getData(uint256(labelHash));
 
         if (domainOwner != msg.sender) revert NotDomainOwner();
 
-        bytes memory payload = abi.encode(name, domainOwner, fuses, expiry);
+        bytes memory payload = abi.encode(name, domainOwner, destinationResolver, fuses, expiry);
 
         axelarGasService.payNativeGasForContractCall{value: msg.value}(
             address(this),

@@ -13,7 +13,7 @@ export const ENS_ADDRESS = {
     "WAXL": "0x23ee2343B892b1BB63503a4FAbc840E0e2C6810f",
     "ENSRegistry": "0x9fa32a25F4478C78D62414e0118DC85BAA8506B2",
     "ETHRegistrarController": "0x673bD3fAdD64AE5dA7b6E74Ab0eA899586cd5eD8",
-    "NameWrapper": "0xbb8e47057b41035c52C4Cc066b9E298de660Cc72",
+    "NameWrapper": "0xed5e7987891006efc72f9b0b24d3134bde0270bb",
     "PublicResolver": "0x3aC5105c124a1710096ADa0d9074bf31e9E06977",
     "RPC_URL": "https://goerli.infura.io/v3/8471ad43100b48029d2ecf04a763c230",
   },
@@ -107,6 +107,10 @@ export function getNameHash(domain: string) {
 }
 
 export function getNameHashSimple(name: string) {
+  const parts = name.split('.');
+  if (parts.length > 1 && parts[parts.length] == 'axl') {
+    name = parts.slice(0, -1).join('.');
+  }
   return utils.keccak256(utils.toUtf8Bytes(name));
 }
 
@@ -188,7 +192,7 @@ export async function registerDomain(
   commitmentParams: any[],
 ) {
   const ETHRegistrarController = getETHRegistrarController(chainId, signer);
-  await (await ETHRegistrarController.register(...commitmentParams, { gasLimit: 10000000 })).wait();
+  await (await ETHRegistrarController.register(...commitmentParams)).wait();
 }
 
 export async function getDomainOwnerAndChainInfo(domain: string) {
@@ -222,14 +226,15 @@ export async function getDomainAddress(chainId, domain: string): Promise<string>
   const node = getNameHash(domain);
 
   const PublicResolver = getPublicResolver(chainId, getProvider(chainId));
-  return await PublicResolver.addr(node);
+  console.log(PublicResolver)
+  return await PublicResolver['addr(bytes32)'](node);
 }
 
 export async function setDomainAddress(chainId, signer: Signer, domain: string, address: string) {
   const node = getNameHash(domain);
 
   const PublicResolver = getPublicResolver(chainId, signer);
-  await (await PublicResolver.setAddr(node, address)).wait();
+  await (await PublicResolver['setAddr(bytes32,address)'](node, address)).wait();
 }
 
 export async function getDomainAvailability(domain: string) {
@@ -239,13 +244,17 @@ export async function getDomainAvailability(domain: string) {
 export async function getDomainData(domain): Promise<DomainCompleteData> {
   const nameHash = getNameHash(domain);
 
+  console.log(nameHash)
+
   let owner = ADDRESS_ZERO;
   let globalExpiry = 0;
   const chains: DomainChainData[] = [];
 
   for (const chainId in ENS_ADDRESS) {
     const NameWrapper = getNameWrapper(chainId, getProvider(chainId));
-    const { domainOwner, fuses, expiry } = await NameWrapper.getData(nameHash);
+    console.log(BigNumber.from(nameHash).toString())
+    const [ domainOwner, fuses, expiry ] = await NameWrapper.getData(BigNumber.from(nameHash).toString());
+    console.log([ domainOwner, fuses, expiry ])
     if (domainOwner != ADDRESS_ZERO) {
       owner = domainOwner;
       globalExpiry = expiry;

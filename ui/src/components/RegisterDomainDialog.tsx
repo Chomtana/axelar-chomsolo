@@ -1,4 +1,4 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField } from "@mui/material";
+import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField, Typography } from "@mui/material";
 import React, { useCallback, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { addDomain, approveWAXL, commitDomain, ENS_ADDRESS, getDomainAvailability, registerDomain } from "../utils/ens";
@@ -10,6 +10,7 @@ enum DomainRegistrationState {
   CHECKING,
   APPROVE,
   COMMIT,
+  WAITING,
   REGISTER,
 }
 
@@ -19,6 +20,15 @@ export default function RegisterDomainDialog({ open, handleClose, signer, refres
   const [state, setState] = useState<DomainRegistrationState>(DomainRegistrationState.IDLE)
 
   const handleCreate = useCallback(async () => {
+    const parts = name.split('.');
+
+    if (parts.length > 2 || (parts.length == 2 && parts[1] != 'axl')) {
+      toast.error("Only .axl domains is supported");
+      return;
+    }
+
+    const justName = parts[0];
+
     try {
       const secret = "0x" + Math.floor(Math.random() * 1000000000).toString(16).padStart(64, '0');
 
@@ -36,7 +46,8 @@ export default function RegisterDomainDialog({ open, handleClose, signer, refres
       await approveWAXL(chainId, signer, ENS_ADDRESS[chainId].ETHRegistrarController);
 
       setState(DomainRegistrationState.COMMIT);
-      const commitment = await commitDomain(chainId, signer, name, parseInt(duration) * 31536000, secret);
+      const commitment = await commitDomain(chainId, signer, justName, parseInt(duration) * 31536000, secret);
+      setState(DomainRegistrationState.WAITING);
       await wait(10000);
       setState(DomainRegistrationState.REGISTER);
       await registerDomain(chainId, signer, commitment.params);
@@ -69,31 +80,47 @@ export default function RegisterDomainDialog({ open, handleClose, signer, refres
     <Dialog open={open} onClose={handleCloseWrapper} fullWidth={true}>
       <DialogTitle>Register new domain</DialogTitle>
       <DialogContent>
-        <TextField
-          autoFocus
-          margin="dense"
-          id="name"
-          label="Domain Name"
-          type="text"
-          fullWidth
-          variant="standard"
-          value={name}
-          disabled={state != DomainRegistrationState.IDLE}
-          onChange={e => setName(e.target.value)}
-        />
+        {(state == DomainRegistrationState.IDLE || state == DomainRegistrationState.CHECKING) ? (
+          <>
+            <TextField
+              autoFocus
+              margin="dense"
+              id="name"
+              label="Domain Name"
+              type="text"
+              fullWidth
+              variant="standard"
+              value={name}
+              disabled={state != DomainRegistrationState.IDLE}
+              onChange={e => setName(e.target.value)}
+            />
 
-        <TextField
-          autoFocus
-          margin="dense"
-          id="duration"
-          label="Duration (Year)"
-          type="number"
-          fullWidth
-          variant="standard"
-          value={duration}
-          disabled={state != DomainRegistrationState.IDLE}
-          onChange={e => setDuration(e.target.value)}
-        />
+            <TextField
+              autoFocus
+              margin="dense"
+              id="duration"
+              label="Duration (Year)"
+              type="number"
+              fullWidth
+              variant="standard"
+              value={duration}
+              disabled={state != DomainRegistrationState.IDLE}
+              onChange={e => setDuration(e.target.value)}
+            />
+          </>
+        ) : (
+          <div>
+            <Typography variant="h6">Registering a name requires you to complete 4 steps</Typography>
+
+            <ol>
+              <li style={{ opacity: state == DomainRegistrationState.APPROVE ? 1 : 0.4 }}><b>Approve AXL:</b> Your wallet will open and you will be asked to confirm the approval of AXL to the registrar contract.</li>
+              <li style={{ opacity: state == DomainRegistrationState.COMMIT ? 1 : 0.4 }}><b>Request to register:</b> Your wallet will re-open and you will be asked to confirm the registration. If the registration is not processed within 7 days of the first, you will need to start again from step 1.</li>
+              <li style={{ opacity: state == DomainRegistrationState.WAITING ? 1 : 0.4 }}><b>Wait for 10 seconds:</b> The waiting period is required to ensure another person hasn't tried to register the same name and protect you after your request.</li>
+              <li style={{ opacity: state == DomainRegistrationState.REGISTER ? 1 : 0.4 }}><b>Complete Registration:</b> Your wallet will re-open to let you complete the domain registration.</li>
+            </ol>
+          </div>
+        )}
+
       </DialogContent>
       <DialogActions>
         <Button onClick={handleClose} disabled={state != DomainRegistrationState.IDLE} color="secondary">Cancel</Button>
