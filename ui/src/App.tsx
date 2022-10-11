@@ -103,7 +103,7 @@ function App() {
               </Typography>
 
               {domains.map((domain) => (
-                <DomainCard domain={domain} refreshToken={refreshToken} ></DomainCard>
+                <DomainCard domain={domain} signer={signer} refreshToken={refreshToken} ></DomainCard>
               ))}
 
               <div style={{ marginTop: 16 }}>

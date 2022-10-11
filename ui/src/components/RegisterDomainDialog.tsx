@@ -48,7 +48,7 @@ export default function RegisterDomainDialog({ open, handleClose, signer, refres
       setState(DomainRegistrationState.COMMIT);
       const commitment = await commitDomain(chainId, signer, justName, parseInt(duration) * 31536000, secret);
       setState(DomainRegistrationState.WAITING);
-      await wait(10000);
+      await wait(15000);
       setState(DomainRegistrationState.REGISTER);
       await registerDomain(chainId, signer, commitment.params);
       await addDomain(await signer.getAddress(), name);
@@ -115,7 +115,7 @@ export default function RegisterDomainDialog({ open, handleClose, signer, refres
             <ol>
               <li style={{ opacity: state == DomainRegistrationState.APPROVE ? 1 : 0.4 }}><b>Approve AXL:</b> Your wallet will open and you will be asked to confirm the approval of AXL to the registrar contract.</li>
               <li style={{ opacity: state == DomainRegistrationState.COMMIT ? 1 : 0.4 }}><b>Request to register:</b> Your wallet will re-open and you will be asked to confirm the registration. If the registration is not processed within 7 days of the first, you will need to start again from step 1.</li>
-              <li style={{ opacity: state == DomainRegistrationState.WAITING ? 1 : 0.4 }}><b>Wait for 10 seconds:</b> The waiting period is required to ensure another person hasn't tried to register the same name and protect you after your request.</li>
+              <li style={{ opacity: state == DomainRegistrationState.WAITING ? 1 : 0.4 }}><b>Wait for 15 seconds:</b> The waiting period is required to ensure another person hasn't tried to register the same name and protect you after your request.</li>
               <li style={{ opacity: state == DomainRegistrationState.REGISTER ? 1 : 0.4 }}><b>Complete Registration:</b> Your wallet will re-open to let you complete the domain registration.</li>
             </ol>
           </div>

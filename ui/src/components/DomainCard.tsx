@@ -2,10 +2,11 @@ import { Typography, CardActions, Button, LinearProgress } from "@mui/material"
 import Card from "@mui/material/Card"
 import CardContent from "@mui/material/CardContent"
 import React, { useCallback, useEffect, useState } from "react"
+import { toast } from "react-toastify"
 import addressParse from "../utils/addressParse"
-import { DomainCompleteData, getDomainData } from "../utils/ens"
+import { DomainCompleteData, getDomainData, setDomainAddress } from "../utils/ens"
 
-export default function DomainCard({ domain, refreshToken }) {
+export default function DomainCard({ domain, signer, refreshToken }) {
   const [data, setData] = useState<DomainCompleteData | undefined>();
 
   const refreshData = useCallback(async () => {
@@ -39,13 +40,25 @@ export default function DomainCard({ domain, refreshToken }) {
           Expire: {new Date(data.expire).toLocaleString()}
         </Typography>
 
-        <Typography marginTop={1}>
-          {data.chains.map((chain) => (
-            <div>
-              {chain.chainId} {chain.address}
-            </div>
-          ))}
-        </Typography>
+        {data.chains.map((chain) => (
+          <div key={chain.chainId}>
+            <Typography marginTop={1}>
+              {chain.chainId}&nbsp;
+
+              {chain.address}&nbsp;
+              <a href="#" onClick={async () => {
+                const walletAddress = window.prompt('Please enter a new wallet address for domain ' + data.name + ' chain ' + chain.name);
+                if (walletAddress) {
+                  toast.info('Please confirm transaction in your wallet');
+                  await setDomainAddress(chain.chainId, signer, data.name, walletAddress);
+                  refreshData();
+                  toast.success('Domain wallet address changed')
+                }
+              }}>Change</a>
+            </Typography>
+
+          </div>
+        ))}
       </CardContent>
 
       <CardActions>

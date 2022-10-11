@@ -5,16 +5,17 @@ import ETHRegistrarControllerABI from "../abi/ETHRegistrarController.json";
 import NameWrapperABI from "../abi/NameWrapper.json";
 import PublicResolverABI from "../abi/PublicResolver.json";
 import ERC20ABI from "../abi/IERC20.json";
+import { AxelarQueryAPI, Environment, EvmChain, GasToken } from "@axelar-network/axelarjs-sdk";
 
 const ADDRESS_ZERO = "0x0000000000000000000000000000000000000000";
 
 export const ENS_ADDRESS = {
   5: {
     "WAXL": "0x23ee2343B892b1BB63503a4FAbc840E0e2C6810f",
-    "ENSRegistry": "0x9fa32a25F4478C78D62414e0118DC85BAA8506B2",
-    "ETHRegistrarController": "0x673bD3fAdD64AE5dA7b6E74Ab0eA899586cd5eD8",
-    "NameWrapper": "0xed5e7987891006efc72f9b0b24d3134bde0270bb",
-    "PublicResolver": "0x3aC5105c124a1710096ADa0d9074bf31e9E06977",
+    "ENSRegistry": "0x5611bFeAB50674a1A0D09d28a2372a8A2A727F95",
+    "ETHRegistrarController": "0x22B20Ab1FC50f92E3CB384f237212257Fd56D640",
+    "NameWrapper": "0xd032792b8d8B60bFc82fAa3AE5Fec62BECD67177",
+    "PublicResolver": "0x7BB89F0Ba25c371E0B2dA2b50e0a513d512D1c3a",
     "RPC_URL": "https://goerli.infura.io/v3/8471ad43100b48029d2ecf04a763c230",
   },
   // 97: {
@@ -59,11 +60,40 @@ export const ENS_ADDRESS = {
   // },
 }
 
+const CROSS_CHAIN_CONFIG = {
+  5: {
+    name: EvmChain.ETHEREUM,
+    gasToken: GasToken.ETH,
+  },
+  97: {
+    name: EvmChain.BINANCE,
+    gasToken: GasToken.BINANCE,
+  },
+  43113: {
+    name: EvmChain.AVALANCHE,
+    gasToken: GasToken.AVAX,
+  },
+  4002: {
+    name: EvmChain.FANTOM,
+    gasToken: GasToken.FTM,
+  },
+  1287: {
+    name: EvmChain.MOONBEAM,
+    gasToken: GasToken.GLMR,
+  },
+  80001: {
+    name: EvmChain.POLYGON,
+    gasToken: GasToken.MATIC,
+  },
+}
+
 export const COMMIT_TIME = 10; // 10 seconds for testnet
 
 export interface DomainChainData {
   chainId: number;
   address: string;
+  name: string;
+  enabled: boolean;
 }
 
 export interface DomainCompleteData {
@@ -264,6 +294,15 @@ export async function getDomainData(domain): Promise<DomainCompleteData> {
       chains.push({
         address,
         chainId: parseInt(chainId),
+        name: CROSS_CHAIN_CONFIG[chainId].name,
+        enabled: true,
+      });
+    } else {
+      chains.push({
+        address: ADDRESS_ZERO,
+        chainId: parseInt(chainId),
+        name: CROSS_CHAIN_CONFIG[chainId].name,
+        enabled: false,
       });
     }
   }
@@ -274,4 +313,22 @@ export async function getDomainData(domain): Promise<DomainCompleteData> {
     expire: globalExpiry * 1000,
     name: domain,
   }
+}
+
+export async function bridgeDomain(name, signer, sourceChainId, destinationChainId) {
+  const sdk = new AxelarQueryAPI({
+    environment: Environment.TESTNET,
+  });
+
+  const ETHRegistrarController = getETHRegistrarController(sourceChainId, signer);
+
+  const gasFee = await sdk.estimateGasFee(
+    CROSS_CHAIN_CONFIG[sourceChainId].name,
+    CROSS_CHAIN_CONFIG[destinationChainId].name,
+    CROSS_CHAIN_CONFIG[sourceChainId].gasToken,
+  );
+
+  const tx = await ETHRegistrarController.bridgeDomain(name, CROSS_CHAIN_CONFIG[destinationChainId].name, ENS_ADDRESS[destinationChainId].ETHRegistrarController, ENS_ADDRESS[destinationChainId].PublicResolver, { value: gasFee })
+
+  return tx;
 }
