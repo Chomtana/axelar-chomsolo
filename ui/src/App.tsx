@@ -23,7 +23,7 @@ import DepositDialog from "./components/DepositDialog";
 import WithdrawDialog from "./components/WithdrawDialog";
 import TransferDialog from "./components/TransferDialog";
 import DomainCard from "./components/DomainCard";
-import { getDomainsList } from "./utils/ens";
+import { ENS_ADDRESS, getDomainsList } from "./utils/ens";
 
 function App() {
   const signer = useSigner();
@@ -55,7 +55,7 @@ function App() {
 
   useEffect(() => {
     if (address) {
-      if (networkId == 5) {
+      if (ENS_ADDRESS[networkId]) {
         refreshData();
       } else {
         if (window.ethereum) {
@@ -86,7 +86,7 @@ function App() {
           paddingBottom: 24,
         }}
       >
-        {connected && signer && address && networkId == 5 ? (
+        {connected && signer && address && ENS_ADDRESS[networkId] ? (
           loading ? (
             <div style={{ display: "flex", justifyContent: "center" }}>
               <CircularProgress />
@@ -125,7 +125,7 @@ function App() {
             sx={{ flexGrow: 1 }}
             align="center"
           >
-            Please connect your wallet to Goerli testnet network.
+            Please connect your wallet to supported testnet network.
           </Typography>
         )}
       </Container>

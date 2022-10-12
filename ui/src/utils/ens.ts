@@ -34,14 +34,14 @@ export const ENS_ADDRESS = {
   //   "PublicResolver": "",
   //   "RPC_URL": "https://api.avax-test.network/ext/bc/C/rpc",
   // },
-  // 4002: {
-  //   "WAXL": "0x66A5df72619982a2Ef49e8317079b6806d56f66B",
-  //   "ENSRegistry": "",
-  //   "ETHRegistrarController": "",
-  //   "NameWrapper": "",
-  //   "PublicResolver": "",
-  //   "RPC_URL": "https://rpc.testnet.fantom.network/",
-  // },
+  4002: {
+    "WAXL": "0x66A5df72619982a2Ef49e8317079b6806d56f66B",
+    "ENSRegistry": "0x2699581BB0d22aa9E848467858e14F4401A1E446",
+    "ETHRegistrarController": "0x2EC6BeFf204Aa483ff03DD47d3B764063Fa2Bf2A",
+    "NameWrapper": "0xFD2d987Cb5ef7dC5DBD86955fd4f0482c5B5a7Fc",
+    "PublicResolver": "0x844cCDa95040f1Cd3E887BDc15C2B6eB376de77e",
+    "RPC_URL": "https://rpc.testnet.fantom.network/",
+  },
   1287: {
     "WAXL": "0xB4D56B6AD4DD2B48e68D2a26C25A04dC1c0eE393",
     "ENSRegistry": "0x7D35D5Bc1Ad11a82a2ea68f629Bb4a4632fE5777",
@@ -87,7 +87,18 @@ const CROSS_CHAIN_CONFIG = {
   },
 }
 
-export const COMMIT_TIME = 10; // 10 seconds for testnet
+export const COMMIT_TIME = 15; // 15 seconds for testnet
+
+export const SUPPORTED_TOKENS = [
+  {
+    symbol: "WETH",
+    address: "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6",
+  },
+  {
+    symbol: "UNI",
+    address: "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984",
+  }
+]
 
 export interface DomainChainData {
   chainId: number;
@@ -335,7 +346,13 @@ export async function bridgeDomain(name, signer, sourceChainId, destinationChain
     CROSS_CHAIN_CONFIG[sourceChainId].gasToken,
   );
 
-  const tx = await ETHRegistrarController.bridgeDomain(name, CROSS_CHAIN_CONFIG[destinationChainId].name, ENS_ADDRESS[destinationChainId].ETHRegistrarController, ENS_ADDRESS[destinationChainId].PublicResolver, { value: gasFee })
+  let destinationChainNameHotfix = CROSS_CHAIN_CONFIG[destinationChainId].name;
+
+  if (destinationChainNameHotfix.toLowerCase() == 'ethereum') {
+    destinationChainNameHotfix = 'ethereum-2';
+  }
+
+  const tx = await ETHRegistrarController.bridgeDomain(name, destinationChainNameHotfix, ENS_ADDRESS[destinationChainId].ETHRegistrarController, ENS_ADDRESS[destinationChainId].PublicResolver, { value: gasFee })
 
   return tx;
 }
