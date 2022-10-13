@@ -103,7 +103,9 @@ function App() {
               </Typography>
 
               {domains.map((domain) => (
-                <DomainCard domain={domain} signer={signer} refreshToken={refreshToken} ></DomainCard>
+                <div style={{ marginTop: 8, marginBottom: 8 }}>
+                  <DomainCard domain={domain} signer={signer} refreshToken={refreshToken} ></DomainCard>
+                </div>
               ))}
 
               <div style={{ marginTop: 16 }}>
@@ -134,6 +136,7 @@ function App() {
         open={showRegisterDomainDialog}
         handleClose={() => setShowRegisterDomainDialog(false)}
         signer={signer}
+        chainId={networkId}
         refreshData={refreshData}
       ></RegisterDomainDialog>
 

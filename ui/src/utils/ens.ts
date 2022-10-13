@@ -60,7 +60,7 @@ export const ENS_ADDRESS = {
   },
 }
 
-const CROSS_CHAIN_CONFIG = {
+export const CROSS_CHAIN_CONFIG = {
   5: {
     name: EvmChain.ETHEREUM,
     gasToken: GasToken.ETH,
@@ -334,27 +334,37 @@ export async function getDomainData(domain): Promise<DomainCompleteData> {
 }
 
 export async function bridgeDomain(name, signer, sourceChainId, destinationChainId) {
-  const sdk = new AxelarQueryAPI({
-    environment: Environment.TESTNET,
-  });
+  let gasFee;
 
-  const ETHRegistrarController = getETHRegistrarController(sourceChainId, signer);
+  try {
+    const sdk = new AxelarQueryAPI({
+      environment: Environment.TESTNET,
+    });
+  
+    const ETHRegistrarController = getETHRegistrarController(sourceChainId, signer);
+  
+    let destinationChainNameHotfix = CROSS_CHAIN_CONFIG[destinationChainId].name;
+  
+    if (destinationChainNameHotfix.toLowerCase() == 'ethereum') {
+      destinationChainNameHotfix = 'ethereum-2';
+    }
+  
+    gasFee = await sdk.estimateGasFee(
+      CROSS_CHAIN_CONFIG[sourceChainId].name,
+      destinationChainNameHotfix as EvmChain,
+      CROSS_CHAIN_CONFIG[sourceChainId].gasToken,
+    );
+  
+    const tx = await ETHRegistrarController.bridgeDomain(name, destinationChainNameHotfix, ENS_ADDRESS[destinationChainId].ETHRegistrarController, ENS_ADDRESS[destinationChainId].PublicResolver, { value: gasFee })
+  
+    return tx;
+  } catch (err: any) {
+    if (err.data?.message == 'insufficient balance for transfer') {
+      err.data.message = 'Insufficient balance for gas fee: ' + parseFloat(ethers.utils.formatEther(gasFee)).toFixed(4) + ' ' + CROSS_CHAIN_CONFIG[sourceChainId].gasToken
+    }
 
-  const gasFee = await sdk.estimateGasFee(
-    CROSS_CHAIN_CONFIG[sourceChainId].name,
-    CROSS_CHAIN_CONFIG[destinationChainId].name,
-    CROSS_CHAIN_CONFIG[sourceChainId].gasToken,
-  );
-
-  let destinationChainNameHotfix = CROSS_CHAIN_CONFIG[destinationChainId].name;
-
-  if (destinationChainNameHotfix.toLowerCase() == 'ethereum') {
-    destinationChainNameHotfix = 'ethereum-2';
+    throw err;
   }
-
-  const tx = await ETHRegistrarController.bridgeDomain(name, destinationChainNameHotfix, ENS_ADDRESS[destinationChainId].ETHRegistrarController, ENS_ADDRESS[destinationChainId].PublicResolver, { value: gasFee })
-
-  return tx;
 }
 
 export async function setSubnodeOwner(chainId, signer, parentDomain, subname, owner) {

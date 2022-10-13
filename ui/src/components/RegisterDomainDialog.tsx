@@ -1,7 +1,7 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField, Typography } from "@mui/material";
 import React, { useCallback, useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import { addDomain, approveWAXL, commitDomain, COMMIT_TIME, ENS_ADDRESS, getDomainAvailability, registerDomain } from "../utils/ens";
+import { addDomain, approveWAXL, commitDomain, COMMIT_TIME, CROSS_CHAIN_CONFIG, ENS_ADDRESS, getDomainAvailability, registerDomain } from "../utils/ens";
 
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -26,7 +26,7 @@ function calculatePrice(domain) {
   }
 }
 
-export default function RegisterDomainDialog({ open, handleClose, signer, refreshData }) {
+export default function RegisterDomainDialog({ open, handleClose, signer, chainId, refreshData }) {
   const [name, setName] = useState("");
   const [duration, setDuration] = useState("1");
   const [state, setState] = useState<DomainRegistrationState>(DomainRegistrationState.IDLE)
@@ -52,8 +52,6 @@ export default function RegisterDomainDialog({ open, handleClose, signer, refres
         throw new Error("Domain " + name + " is not available");
       }
 
-      const chainId = await signer.getChainId();
-
       setState(DomainRegistrationState.APPROVE);
       await approveWAXL(chainId, signer, ENS_ADDRESS[chainId].ETHRegistrarController);
 
@@ -73,7 +71,7 @@ export default function RegisterDomainDialog({ open, handleClose, signer, refres
       handleClose();
       setState(DomainRegistrationState.IDLE);
     }
-  }, [signer, name]);
+  }, [signer, chainId, name]);
 
   const handleCloseWrapper = useCallback(async () => {
     if (state == DomainRegistrationState.IDLE) {
@@ -120,7 +118,10 @@ export default function RegisterDomainDialog({ open, handleClose, signer, refres
               onChange={e => setDuration(e.target.value)}
             />
 
-            {name && <Typography>Price: {calculatePrice(name) * parseInt(duration)} AXL</Typography>}
+            <div style={{ marginTop: 10 }}>
+              {name && <Typography>Price: {calculatePrice(name) * parseInt(duration)} AXL</Typography>}
+              <Typography>Connected network: {CROSS_CHAIN_CONFIG[chainId]?.name}</Typography>
+            </div>
           </>
         ) : (
           <div>
