@@ -1,7 +1,7 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField, Typography } from "@mui/material";
 import React, { useCallback, useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import { addDomain, approveWAXL, commitDomain, ENS_ADDRESS, getDomainAvailability, registerDomain } from "../utils/ens";
+import { addDomain, approveWAXL, commitDomain, COMMIT_TIME, ENS_ADDRESS, getDomainAvailability, registerDomain } from "../utils/ens";
 
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -12,6 +12,18 @@ enum DomainRegistrationState {
   COMMIT,
   WAITING,
   REGISTER,
+}
+
+function calculatePrice(domain) {
+  const name = domain.split('.')[0];
+
+  switch (name.length) {
+    case 1: return 50;
+    case 2: return 10;
+    case 3: return 5;
+    case 4: return 3;
+    default: return 1;
+  }
 }
 
 export default function RegisterDomainDialog({ open, handleClose, signer, refreshData }) {
@@ -48,7 +60,7 @@ export default function RegisterDomainDialog({ open, handleClose, signer, refres
       setState(DomainRegistrationState.COMMIT);
       const commitment = await commitDomain(chainId, signer, justName, parseInt(duration) * 31536000, secret);
       setState(DomainRegistrationState.WAITING);
-      await wait(15000);
+      await wait(COMMIT_TIME * 1000);
       setState(DomainRegistrationState.REGISTER);
       await registerDomain(chainId, signer, commitment.params);
       await addDomain(await signer.getAddress(), name);
@@ -107,6 +119,8 @@ export default function RegisterDomainDialog({ open, handleClose, signer, refres
               disabled={state != DomainRegistrationState.IDLE}
               onChange={e => setDuration(e.target.value)}
             />
+
+            {name && <Typography>Price: {calculatePrice(name) * parseInt(duration)} AXL</Typography>}
           </>
         ) : (
           <div>

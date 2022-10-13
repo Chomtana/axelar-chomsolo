@@ -18,22 +18,22 @@ export const ENS_ADDRESS = {
     "PublicResolver": "0x7BB89F0Ba25c371E0B2dA2b50e0a513d512D1c3a",
     "RPC_URL": "https://goerli.infura.io/v3/8471ad43100b48029d2ecf04a763c230",
   },
-  // 97: {
-  //   "WAXL": "0xfC3B4feb754d8082F745940347600D373f03dcaC",
-  //   "ENSRegistry": "",
-  //   "ETHRegistrarController": "",
-  //   "NameWrapper": "",
-  //   "PublicResolver": "",
-  //   "RPC_URL": "https://data-seed-prebsc-2-s3.binance.org:8545",
-  // },
-  // 43113: {
-  //   "WAXL": "0xa8B51e6517f9A6Ab7b247bF10b71b1A738eD8E50",
-  //   "ENSRegistry": "",
-  //   "ETHRegistrarController": "",
-  //   "NameWrapper": "",
-  //   "PublicResolver": "",
-  //   "RPC_URL": "https://api.avax-test.network/ext/bc/C/rpc",
-  // },
+  97: {
+    "WAXL": "0xfC3B4feb754d8082F745940347600D373f03dcaC",
+    "ENSRegistry": "0x2699581BB0d22aa9E848467858e14F4401A1E446",
+    "ETHRegistrarController": "0x2EC6BeFf204Aa483ff03DD47d3B764063Fa2Bf2A",
+    "NameWrapper": "0xFD2d987Cb5ef7dC5DBD86955fd4f0482c5B5a7Fc",
+    "PublicResolver": "0x844cCDa95040f1Cd3E887BDc15C2B6eB376de77e",
+    "RPC_URL": "https://data-seed-prebsc-2-s2.binance.org:8545",
+  },
+  43113: {
+    "WAXL": "0xa8B51e6517f9A6Ab7b247bF10b71b1A738eD8E50",
+    "ENSRegistry": "0x2699581BB0d22aa9E848467858e14F4401A1E446",
+    "ETHRegistrarController": "0x2EC6BeFf204Aa483ff03DD47d3B764063Fa2Bf2A",
+    "NameWrapper": "0xFD2d987Cb5ef7dC5DBD86955fd4f0482c5B5a7Fc",
+    "PublicResolver": "0x844cCDa95040f1Cd3E887BDc15C2B6eB376de77e",
+    "RPC_URL": "https://api.avax-test.network/ext/bc/C/rpc",
+  },
   4002: {
     "WAXL": "0x66A5df72619982a2Ef49e8317079b6806d56f66B",
     "ENSRegistry": "0x2699581BB0d22aa9E848467858e14F4401A1E446",
@@ -50,14 +50,14 @@ export const ENS_ADDRESS = {
     "PublicResolver": "0xE5a7fE5464513806ad89D589716C9764289cc4c2",
     "RPC_URL": "https://rpc.testnet.moonbeam.network/",
   },
-  // 80001: {
-  //   "WAXL": "0x9c79782d2B13CAC0Fa2FB00D188104fe6f98E533",
-  //   "ENSRegistry": "",
-  //   "ETHRegistrarController": "",
-  //   "NameWrapper": "",
-  //   "PublicResolver": "",
-  //   "RPC_URL": "https://matic-mumbai.chainstacklabs.com",
-  // },
+  80001: {
+    "WAXL": "0x9c79782d2B13CAC0Fa2FB00D188104fe6f98E533",
+    "ENSRegistry": "0x2EC6BeFf204Aa483ff03DD47d3B764063Fa2Bf2A",
+    "ETHRegistrarController": "0xE6579A93488A6fa66FA4d3F8A35873d1aC730d46",
+    "NameWrapper": "0xc488722f8a675B6b49DcB3D209B650d7185B75Df",
+    "PublicResolver": "0xdE78d43279b0C72FD533193f1b67DedF92c9F374",
+    "RPC_URL": "https://matic-mumbai.chainstacklabs.com",
+  },
 }
 
 const CROSS_CHAIN_CONFIG = {
