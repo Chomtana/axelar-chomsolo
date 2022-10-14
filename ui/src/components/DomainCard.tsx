@@ -87,7 +87,7 @@ export default function DomainCard({ domain, signer, refreshToken }) {
                         await wait(5000);
                       }
   
-                      toast.success('Domain successfully enabled to chain ' + chain.name);
+                      toast.success('Domain successfully enabled on chain ' + chain.name);
                       refreshData();
                     } catch (err: any) {
                       console.error(err);
@@ -143,7 +143,7 @@ export default function DomainCard({ domain, signer, refreshToken }) {
               }
             } catch (err) {
               console.error(err);
-              toast.error('Please bridge ' + data.name + ' to chain ' + CROSS_CHAIN_CONFIG[chainId].name)
+              toast.error('Please enable ' + data.name + ' on chain ' + CROSS_CHAIN_CONFIG[chainId].name)
             }
 
           }}
@@ -152,8 +152,14 @@ export default function DomainCard({ domain, signer, refreshToken }) {
         </Button>
         <Button
           size="small"
-          onClick={() => {
-
+          onClick={async () => {
+            const chainId = await signer.getChainId();
+            let address = data.chains.find(x => x.chainId == chainId && x.enabled)?.address;
+            if (!address) {
+              // toast.warn('Please enable domain ' + data.name + ' on chain ' + CROSS_CHAIN_CONFIG[chainId].name)
+              address = data.chains.find(x => x.enabled)?.address;
+            }
+            window.open('https://portfolio.nansen.ai/dashboard/' + address);
           }}
         >
           Portfolio
