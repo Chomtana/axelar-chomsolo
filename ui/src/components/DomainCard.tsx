@@ -66,32 +66,69 @@ export default function DomainCard({ domain, signer, refreshToken }) {
                   href={bridgingTx[chain.chainId] ? "https://testnet.axelarscan.io/gmp/" + bridgingTx[chain.chainId] : "#"}
                   target={bridgingTx[chain.chainId] ? "_blank" : ""}
                   onClick={async () => {
-                    try {
-                      if (bridgingTx[chain.chainId]) return;
+                    const parts = data.name.split('.');
 
-                      const name = data.name.split('.').slice(0, -1).join('.');
-                      const sourceChainId = await signer.getChainId();
-  
-                      if (!data.chains.find(x => x.chainId == sourceChainId)?.enabled) {
-                        toast.warning('Please switch chain in your wallet to a chain that domain ' + data.name + ' is currently exists');
-                        return;
+                    if (parts.length > 2) {
+                      // Is a subdomain
+                      try {
+                        const subdomain = parts[0];
+                        const parentDomain = parts.slice(1).join('.');
+
+                        if (await signer.getChainId() != chain.chainId) {
+                          toast.warn('Please switch chain in your wallet to ' + chain.name);
+                          return;
+                        }
+          
+                        if (subdomain) {
+                          if (subdomain.indexOf('.') != -1) {
+                            toast.error('Subdomain can\'t contains "."');
+                            return;
+                          }
+          
+                          toast.info('Please confirm transaction in your wallet');
+                          await setSubnodeOwner(
+                            chain.chainId,
+                            signer,
+                            parentDomain,
+                            subdomain,
+                          )
+
+                          toast.success('Domain successfully enabled on chain ' + chain.name);
+          
+                          refreshData();
+                        }
+                      } catch (err) {
+                        console.error(err);
+                        toast.error('Please enable ' + parts.slice(1).join('.') + ' on chain ' + chain.name)
                       }
+                    } else {
+                      try {
+                        if (bridgingTx[chain.chainId]) return;
   
-                      toast.info('Please confirm transaction in your wallet');
-                      const tx = await bridgeDomain(name, signer, sourceChainId, chain.chainId);
-                      console.log(tx);
-                      bridgingTx[chain.chainId] = tx.hash;
-                      setBridgingTx({...bridgingTx});
-  
-                      while (!(await getDomainExistsInChain(chain.chainId, data.name))) {
-                        await wait(5000);
+                        const name = parts.slice(0, -1).join('.');
+                        const sourceChainId = await signer.getChainId();
+    
+                        if (!data.chains.find(x => x.chainId == sourceChainId)?.enabled) {
+                          toast.warning('Please switch chain in your wallet to a chain that domain ' + data.name + ' is currently exists');
+                          return;
+                        }
+    
+                        toast.info('Please confirm transaction in your wallet');
+                        const tx = await bridgeDomain(name, signer, sourceChainId, chain.chainId);
+                        console.log(tx);
+                        bridgingTx[chain.chainId] = tx.hash;
+                        setBridgingTx({...bridgingTx});
+    
+                        while (!(await getDomainExistsInChain(chain.chainId, data.name))) {
+                          await wait(5000);
+                        }
+    
+                        toast.success('Domain successfully enabled on chain ' + chain.name);
+                        refreshData();
+                      } catch (err: any) {
+                        console.error(err);
+                        toast.error(err.data?.message || err.message || 'Something went wrong');
                       }
-  
-                      toast.success('Domain successfully enabled on chain ' + chain.name);
-                      refreshData();
-                    } catch (err: any) {
-                      console.error(err);
-                      toast.error(err.data?.message || err.message || 'Something went wrong');
                     }
                   }}
                 >
