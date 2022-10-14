@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import logo from "./logo.svg";
+import logo from "./axelardomains.svg";
 import "./App.css";
 import ConnectWalletButton from "./components/ConnectWalletButton";
 import {
@@ -69,9 +69,13 @@ function App() {
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static">
         <Toolbar>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+          <div style={{ flexGrow: 1 }}>
+            <img src={logo} height={35} alt="Axelar Domains" style={{ filter: "invert(1)", marginTop: 4 }}></img>
+          </div>
+          
+          {/* <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             Axelar Domains
-          </Typography>
+          </Typography> */}
           <ConnectWalletButton></ConnectWalletButton>
         </Toolbar>
       </AppBar>
