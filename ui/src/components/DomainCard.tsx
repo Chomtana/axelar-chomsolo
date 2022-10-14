@@ -5,11 +5,13 @@ import React, { useCallback, useEffect, useState } from "react"
 import { toast } from "react-toastify"
 import addressParse from "../utils/addressParse"
 import { bridgeDomain, DomainCompleteData, getDomainData, getDomainExistsInChain, setDomainAddress } from "../utils/ens"
+import WalletDialog from "./WalletDialog"
 
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 export default function DomainCard({ domain, signer, refreshToken }) {
   const [data, setData] = useState<DomainCompleteData | undefined>();
+  const [showWalletDialog, setShowWalletDialog] = useState<boolean>(false);
   const [bridgingTx, setBridgingTx] = useState<any>({});
 
   const refreshData = useCallback(async () => {
@@ -104,25 +106,44 @@ export default function DomainCard({ domain, signer, refreshToken }) {
       </CardContent>
 
       <CardActions>
-        {/* <Button
+        <Button
           size="small"
-          onClick={() => setShowDepositDialog(bankAccount.address)}
+          onClick={() => {
+            
+          }}
         >
           Renew
         </Button>
         <Button
           size="small"
-          onClick={() => setShowWithdrawDialog(bankAccount.address)}
+          onClick={() => {
+            
+          }}
+        >
+          Add Subdomain
+        </Button>
+        <Button
+          size="small"
+          onClick={() => {
+
+          }}
         >
           Portfolio
         </Button>
         <Button
           size="small"
-          onClick={() => setShowTransferDialog(bankAccount.address)}
+          onClick={() => setShowWalletDialog(true)}
         >
-          Connect
-        </Button> */}
+          Wallet
+        </Button>
       </CardActions>
+
+      <WalletDialog
+        domain={data.name}
+        open={showWalletDialog}
+        handleClose={() => setShowWalletDialog(false)}
+        signer={signer}
+      ></WalletDialog>
     </Card>
   )
 }

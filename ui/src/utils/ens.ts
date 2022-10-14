@@ -89,17 +89,6 @@ export const CROSS_CHAIN_CONFIG = {
 
 export const COMMIT_TIME = 15; // 15 seconds for testnet
 
-export const SUPPORTED_TOKENS = [
-  {
-    symbol: "WETH",
-    address: "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6",
-  },
-  {
-    symbol: "UNI",
-    address: "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984",
-  }
-]
-
 export interface DomainChainData {
   chainId: number;
   address: string;

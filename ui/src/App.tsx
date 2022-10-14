@@ -19,9 +19,6 @@ import { useSigner } from "./hooks/useSigner";
 import { useConnectWallet } from "./store/web3Modal/connectWallet";
 import RegisterDomainDialog from "./components/RegisterDomainDialog";
 import addressParse from "./utils/addressParse";
-import DepositDialog from "./components/DepositDialog";
-import WithdrawDialog from "./components/WithdrawDialog";
-import TransferDialog from "./components/TransferDialog";
 import DomainCard from "./components/DomainCard";
 import { ENS_ADDRESS, getDomainsList } from "./utils/ens";
 
@@ -139,30 +136,6 @@ function App() {
         chainId={networkId}
         refreshData={refreshData}
       ></RegisterDomainDialog>
-
-      <DepositDialog
-        open={Boolean(showDepositDialog)}
-        handleClose={() => setShowDepositDialog(null)}
-        signer={signer}
-        refreshData={refreshData}
-        bankAddress={showDepositDialog}
-      ></DepositDialog>
-
-      <WithdrawDialog
-        open={Boolean(showWithdrawDialog)}
-        handleClose={() => setShowWithdrawDialog(null)}
-        signer={signer}
-        refreshData={refreshData}
-        bankAddress={showWithdrawDialog}
-      ></WithdrawDialog>
-
-      <TransferDialog
-        open={Boolean(showTransferDialog)}
-        handleClose={() => setShowTransferDialog(null)}
-        signer={signer}
-        refreshData={refreshData}
-        bankAddress={showTransferDialog}
-      ></TransferDialog>
     </Box>
   );
 }
