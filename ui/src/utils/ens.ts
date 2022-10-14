@@ -356,11 +356,11 @@ export async function bridgeDomain(name, signer, sourceChainId, destinationChain
   }
 }
 
-export async function setSubnodeOwner(chainId, signer, parentDomain, subname, owner) {
+export async function setSubnodeOwner(chainId, signer, parentDomain, subname) {
   const NameWrapper = getNameWrapper(chainId, signer);
   const nameHash = getNameHash(parentDomain);
 
   const [ domainOwner, fuses, expiry ] = await NameWrapper.getData(BigNumber.from(nameHash).toString());
 
-  await (await NameWrapper.setSubnodeOwner(nameHash, subname, owner, 0, expiry)).wait();
+  await (await NameWrapper.setSubnodeOwner(nameHash, subname, domainOwner, 0, expiry)).wait();
 }

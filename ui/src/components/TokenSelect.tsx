@@ -22,7 +22,7 @@ export default function TokenSelect({ onChange, disabled = false }) {
         disabled={disabled}
         label="Token"
       >
-        {SUPPORTED_TOKENS.map((token) => (
+        {SUPPORTED_TOKENS[5].map((token) => (
           <MenuItem value={token.address} key={token.address}>{token.symbol}</MenuItem>
         ))}
       </Select>

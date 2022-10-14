@@ -4,7 +4,7 @@ import CardContent from "@mui/material/CardContent"
 import React, { useCallback, useEffect, useState } from "react"
 import { toast } from "react-toastify"
 import addressParse from "../utils/addressParse"
-import { bridgeDomain, DomainCompleteData, getDomainData, getDomainExistsInChain, setDomainAddress } from "../utils/ens"
+import { addDomain, bridgeDomain, CROSS_CHAIN_CONFIG, DomainCompleteData, getDomainData, getDomainExistsInChain, setDomainAddress, setSubnodeOwner } from "../utils/ens"
 import WalletDialog from "./WalletDialog"
 
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -109,15 +109,43 @@ export default function DomainCard({ domain, signer, refreshToken }) {
         <Button
           size="small"
           onClick={() => {
-            
+            toast.info('Cross-chain domain renew system to be implemented, contact Chomtana001@gmail.com for more info.')
           }}
         >
           Renew
         </Button>
         <Button
           size="small"
-          onClick={() => {
-            
+          onClick={async () => {
+            const chainId = await signer.getChainId();
+
+            try {
+              const subdomain = window.prompt('Please enter subdomain name (sub.myname.axl enter only "sub")');
+
+              if (subdomain) {
+                if (subdomain.indexOf('.') != -1) {
+                  toast.error('Subdomain can\'t contains "."');
+                  return;
+                }
+
+                toast.info('Please confirm transaction in your wallet');
+                await setSubnodeOwner(
+                  chainId,
+                  signer,
+                  data.name,
+                  subdomain,
+                )
+
+                addDomain(await signer.getAddress(), subdomain + '.' + data.name);
+                toast.success('Subdomain ' + subdomain + '.' + data.name + ' has been added');
+
+                refreshData();
+              }
+            } catch (err) {
+              console.error(err);
+              toast.error('Please bridge ' + data.name + ' to chain ' + CROSS_CHAIN_CONFIG[chainId].name)
+            }
+
           }}
         >
           Add Subdomain
