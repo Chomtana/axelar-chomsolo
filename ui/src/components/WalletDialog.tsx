@@ -23,6 +23,7 @@ import addressParse from "../utils/addressParse";
 import CloseIcon from '@mui/icons-material/Close';
 import { toast } from "react-toastify";
 import { ethers } from "ethers";
+import { AxelarAssetTransfer, AxelarQueryAPI, AxelarQueryAPIConfig, Environment } from "@axelar-network/axelarjs-sdk";
 
 export interface DialogTitleProps {
   children?: React.ReactNode;
@@ -144,13 +145,17 @@ export default function WalletDialog({ open, handleClose, signer, domain }) {
                             return;
                           }
   
-                          const symbol = window.prompt('Please enter token symbol (WAXL / WBNB / WAVAX)');
-                          const tokenContract = getBankTokenContract(symbol || '', bankAccount.chainId);
+                          const symbol = window.prompt('Please enter token symbol (AXL / WBNB / WAVAX)');
+                          const tokenContract = getBankTokenContract(symbol || '', bankAccount.chainId, signer);
   
                           if (tokenContract) {
                             const destination = window.prompt('Please enter destination wallet address');
                             const amount = window.prompt('Please enter token amount to transfer') || '';
-                            await (await tokenContract.transfer(destination, ethers.utils.parseEther(amount))).wait();
+
+                            const parsedAmount = symbol?.toUpperCase() == 'AXL' ? parseFloat(amount) * 1000000 : ethers.utils.parseEther(amount);
+                            
+                            toast.info('Please confirm transaction in your metamask')
+                            await (await tokenContract.transfer(destination, parsedAmount)).wait();
                             toast.success('Transfer success');
                           } else {
                             throw new Error('Invalid token symbol');
@@ -166,7 +171,63 @@ export default function WalletDialog({ open, handleClose, signer, domain }) {
                     <Button
                       size="small"
                       onClick={async () => {
-                        
+                        try {
+                          if (networkId != bankAccount.chainId) {
+                            toast.warn('Please swith chain in your Metamask to ' + bankAccount.name);
+                            return;
+                          }
+  
+                          const symbol = window.prompt('Please enter token symbol (AXL / WBNB / WAVAX)');
+                          const tokenContract = getBankTokenContract(symbol || '', bankAccount.chainId, signer);
+  
+                          if (tokenContract) {
+                            const destinationChainName = window.prompt('Please enter destination chain name (Based on Axelar)');
+
+                            if (!destinationChainName) return;
+
+                            const destinationAddress = bankAccounts.find(x => x.name == destinationChainName)?.address;
+
+                            if (!destinationAddress) {
+                              throw new Error("Chain " + destinationChainName + " doesn't exists for domain " + domain);
+                            }
+
+                            const amount = window.prompt('Please enter token amount to bridge') || '';
+
+                            toast.info('Please wait...');
+
+                            const queryConfig: AxelarQueryAPIConfig = {
+                              environment: Environment.TESTNET
+                            }
+                            const api = new AxelarQueryAPI(queryConfig);
+
+                            const axelarDenom = await api.getDenomFromSymbol(symbol || '', destinationChainName);
+
+                            if (!axelarDenom) {
+                              throw new Error("Invalid token symbol");
+                            }
+
+                            const sdk = new AxelarAssetTransfer({
+                              environment: "testnet" as any
+                            });
+                            const depositAddress = await sdk.getDepositAddress(
+                              bankAccount.name == 'ethereum' ? 'ethereum-2' : bankAccount.name, // source chain
+                              destinationChainName == 'ethereum' ? 'ethereum-2' : destinationChainName, // destination chain
+                              destinationAddress, // destination address
+                              axelarDenom, // denom of asset. See note (2) below
+                            );
+
+                            const parsedAmount = symbol?.toUpperCase() == 'AXL' ? parseFloat(amount) * 1000000 : ethers.utils.parseEther(amount);
+
+                            toast.info('Please confirm transaction in your metamask')
+                            const tx = await tokenContract.transfer(depositAddress, parsedAmount);
+                            toast.success('Axelar has received transfer... Check status on Axelarscan ' + tx.hash);
+                          } else {
+                            throw new Error('Invalid token symbol');
+                          }
+                        } catch (err: any) {
+                          console.error(err);
+                          toast.error(err.data?.message || err.message || 'Something went wrong');
+                        }
                       }}
                     >
                       Bridge

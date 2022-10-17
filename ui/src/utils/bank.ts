@@ -14,7 +14,7 @@ export const BANK_ADDRESS = "0x79A3840E610590A78d94EC428E9d1AFbDC225F8e";
 export const SUPPORTED_TOKENS = {
   5: [
     {
-      symbol: "WAXL",
+      symbol: "AXL",
       address: "0x23ee2343B892b1BB63503a4FAbc840E0e2C6810f",
     },
     {
@@ -28,7 +28,7 @@ export const SUPPORTED_TOKENS = {
   ],
   97: [
     {
-      symbol: "WAXL",
+      symbol: "AXL",
       address: "0xfC3B4feb754d8082F745940347600D373f03dcaC",
     },
     {
@@ -42,7 +42,7 @@ export const SUPPORTED_TOKENS = {
   ],
   43113: [
     {
-      symbol: "WAXL",
+      symbol: "AXL",
       address: "0xa8B51e6517f9A6Ab7b247bF10b71b1A738eD8E50",
     },
     {
@@ -56,7 +56,7 @@ export const SUPPORTED_TOKENS = {
   ],
   4002: [
     {
-      symbol: "WAXL",
+      symbol: "AXL",
       address: "0x66A5df72619982a2Ef49e8317079b6806d56f66B",
     },
     {
@@ -70,7 +70,7 @@ export const SUPPORTED_TOKENS = {
   ],
   1287: [
     {
-      symbol: "WAXL",
+      symbol: "AXL",
       address: "0xB4D56B6AD4DD2B48e68D2a26C25A04dC1c0eE393",
     },
     {
@@ -84,7 +84,7 @@ export const SUPPORTED_TOKENS = {
   ],
   80001: [
     {
-      symbol: "WAXL",
+      symbol: "AXL",
       address: "0x9c79782d2B13CAC0Fa2FB00D188104fe6f98E533",
     },
     {
@@ -156,10 +156,10 @@ export function getBankTokenAddress(symbol: string, chainId) {
   return SUPPORTED_TOKENS[chainId].find(x => x.symbol == symbol)?.address;
 }
 
-export function getBankTokenContract(symbol: string, chainId): Contract | null {
+export function getBankTokenContract(symbol: string, chainId, signer = getProvider(chainId)): Contract | null {
   const address = getBankTokenAddress(symbol, chainId);
   if (!address) return null;
-  return new Contract(address, ERC20ABI, getProvider(chainId));
+  return new Contract(address, ERC20ABI, signer);
 }
 
 export async function getAllBankAccounts(domain: string) {
